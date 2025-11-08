@@ -1,14 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Container, Typography, Button, Rating, Box, Chip, CircularProgress, IconButton } from '@mui/material';
+import { Container, Typography, Button, Rating, Box, Chip, CircularProgress, IconButton, Snackbar, Alert } from '@mui/material';
 import { ArrowBack, ShoppingCart, Favorite } from '@mui/icons-material';
+import { useDispatch } from 'react-redux';
+import { addToCart } from '../store/slices/cartSlice';
+import { API_ENDPOINTS } from '../config/api';
 import axios from 'axios';
 
 const ProductDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showSnackbar, setShowSnackbar] = useState(false);
 
   useEffect(() => {
     fetchProduct();
@@ -16,13 +21,18 @@ const ProductDetails = () => {
 
   const fetchProduct = async () => {
     try {
-      const response = await axios.get(`https://fakestoreapi.com/products/${id}`);
+      const response = await axios.get(API_ENDPOINTS.PRODUCT_BY_ID(id));
       setProduct(response.data);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching product:', error);
       setLoading(false);
     }
+  };
+
+  const handleAddToCart = () => {
+    dispatch(addToCart(product));
+    setShowSnackbar(true);
   };
 
   if (loading) {
@@ -55,7 +65,7 @@ const ProductDetails = () => {
         <div className="product-details-grid">
           <Box>
             <img
-              src={product.image}
+              src={product.image?.startsWith('/uploads/') ? `http://localhost:8081${product.image}` : product.image}
               alt={product.title}
               className="product-details-image"
             />
@@ -94,6 +104,7 @@ const ProductDetails = () => {
                 size="large"
                 startIcon={<ShoppingCart />}
                 sx={{ flex: 1 }}
+                onClick={handleAddToCart}
               >
                 Add to Cart
               </Button>
@@ -108,6 +119,16 @@ const ProductDetails = () => {
           </Box>
         </div>
       </div>
+      
+      <Snackbar
+        open={showSnackbar}
+        autoHideDuration={3000}
+        onClose={() => setShowSnackbar(false)}
+      >
+        <Alert onClose={() => setShowSnackbar(false)} severity="success">
+          Product added to cart!
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };
