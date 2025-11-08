@@ -3,6 +3,7 @@ package com.ecommerce.backend.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -58,6 +59,11 @@ public class Order {
     @Column(nullable = false)
     private String country;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    @JsonBackReference
+    private User user;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<OrderItem> orderItems;
@@ -112,6 +118,9 @@ public class Order {
 
     public String getCountry() { return country; }
     public void setCountry(String country) { this.country = country; }
+
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
 
     public List<OrderItem> getOrderItems() { return orderItems; }
     public void setOrderItems(List<OrderItem> orderItems) { this.orderItems = orderItems; }
