@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { TextField, FormControl, InputLabel, Select, MenuItem, Container, Typography, CircularProgress, Box } from '@mui/material';
 import axios from 'axios';
+import { API_ENDPOINTS } from '../config/api';
 import ProductCard from '../components/ProductCard';
 
 const LandingPage = () => {
@@ -22,7 +23,7 @@ const LandingPage = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await axios.get('https://fakestoreapi.com/products');
+      const response = await axios.get(API_ENDPOINTS.PRODUCTS);
       setProducts(response.data);
       setLoading(false);
     } catch (error) {
@@ -33,8 +34,10 @@ const LandingPage = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await axios.get('https://fakestoreapi.com/products/categories');
-      setCategories(response.data);
+      // Get unique categories from products
+      const response = await axios.get(API_ENDPOINTS.PRODUCTS);
+      const uniqueCategories = [...new Set(response.data.map(product => product.category))];
+      setCategories(uniqueCategories);
     } catch (error) {
       console.error('Error fetching categories:', error);
     }
