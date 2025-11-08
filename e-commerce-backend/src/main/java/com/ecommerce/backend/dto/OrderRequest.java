@@ -14,6 +14,8 @@ public class OrderRequest {
     private Double discountAmount = 0.0;
     private String promoCode;
 
+    private Long userId;
+
     @NotEmpty(message = "Order items cannot be empty")
     private List<OrderItemRequest> items;
 
@@ -51,6 +53,9 @@ public class OrderRequest {
 
     public String getPromoCode() { return promoCode; }
     public void setPromoCode(String promoCode) { this.promoCode = promoCode; }
+
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
 
     public List<OrderItemRequest> getItems() { return items; }
     public void setItems(List<OrderItemRequest> items) { this.items = items; }

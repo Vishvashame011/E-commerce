@@ -23,8 +23,18 @@ const Orders = () => {
 
   const fetchBackendOrders = async () => {
     try {
-      console.log('Fetching orders from:', API_ENDPOINTS.ORDERS);
-      const response = await axios.get(API_ENDPOINTS.ORDERS);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+
+      console.log('Fetching user orders from:', `${API_ENDPOINTS.ORDERS}/my-orders`);
+      const response = await axios.get(`${API_ENDPOINTS.ORDERS}/my-orders`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       console.log('Backend response:', response.data);
       console.log('Number of orders received:', response.data.length);
       setBackendOrders(response.data);
@@ -32,6 +42,9 @@ const Orders = () => {
     } catch (error) {
       console.error('Error fetching orders:', error);
       console.error('Error details:', error.response?.data);
+      if (error.response?.status === 401) {
+        navigate('/login');
+      }
       setLoading(false);
     }
   };
@@ -65,6 +78,26 @@ const Orders = () => {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const handleCancelOrder = async (orderId) => {
+    if (!window.confirm('Are you sure you want to cancel this order?')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`${API_ENDPOINTS.ORDERS}/${orderId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      // Refresh orders after cancellation
+      fetchBackendOrders();
+    } catch (error) {
+      alert('Failed to cancel order: ' + (error.response?.data?.error || error.message));
+    }
   };
 
   if (loading) {
@@ -152,7 +185,7 @@ const Orders = () => {
                 <Grid container spacing={2}>
                   <Grid item xs={12} md={6}>
                     <Typography variant="subtitle2" gutterBottom>
-                      Items ({(order.items || order.orderItems || []).length}):
+                      Items ({(order.items || order.orderItems || []).reduce((total, item) => total + (item.quantity || 0), 0)} items, {(order.items || order.orderItems || []).length} products):
                     </Typography>
                     {(order.items || order.orderItems || []).map((item, index) => (
                       <Box key={index} sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
@@ -213,7 +246,12 @@ const Orders = () => {
                     </Button>
                   )}
                   {(order.status?.toUpperCase() === 'PENDING') && (
-                    <Button variant="outlined" size="small" color="error">
+                    <Button 
+                      variant="outlined" 
+                      size="small" 
+                      color="error"
+                      onClick={() => handleCancelOrder(order.id)}
+                    >
                       Cancel Order
                     </Button>
                   )}

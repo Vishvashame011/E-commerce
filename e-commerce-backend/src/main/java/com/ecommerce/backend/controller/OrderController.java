@@ -7,8 +7,11 @@ import com.ecommerce.backend.service.OrderService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -52,9 +55,62 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<Order> createOrder(@Valid @RequestBody OrderRequest orderRequest) {
-        Order createdOrder = orderService.createOrder(orderRequest);
-        return ResponseEntity.ok(createdOrder);
+    public ResponseEntity<?> createOrder(@Valid @RequestBody OrderRequest orderRequest, Authentication authentication) {
+        if (authentication == null) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "User not authenticated");
+            return ResponseEntity.badRequest().body(error);
+        }
+        
+        try {
+            Order createdOrder = orderService.createOrderForUser(orderRequest, authentication.getName());
+            return ResponseEntity.ok(createdOrder);
+        } catch (RuntimeException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    @GetMapping("/my-orders")
+    public ResponseEntity<?> getCurrentUserOrders(Authentication authentication) {
+        if (authentication == null) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "User not authenticated");
+            return ResponseEntity.badRequest().body(error);
+        }
+        
+        try {
+            List<Order> orders = orderService.getOrdersByUsername(authentication.getName());
+            List<OrderResponse> orderResponses = orders.stream()
+                .map(OrderResponse::new)
+                .collect(java.util.stream.Collectors.toList());
+            return ResponseEntity.ok(orderResponses);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to fetch orders: " + e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> cancelOrder(@PathVariable Long id, Authentication authentication) {
+        if (authentication == null) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "User not authenticated");
+            return ResponseEntity.badRequest().body(error);
+        }
+        
+        try {
+            orderService.cancelOrder(id, authentication.getName());
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Order cancelled successfully");
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
     }
 
     @PutMapping("/{id}/status")

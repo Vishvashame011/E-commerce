@@ -4,8 +4,10 @@ import com.ecommerce.backend.dto.OrderRequest;
 import com.ecommerce.backend.entity.Order;
 import com.ecommerce.backend.entity.OrderItem;
 import com.ecommerce.backend.entity.Product;
+import com.ecommerce.backend.entity.User;
 import com.ecommerce.backend.repository.OrderRepository;
 import com.ecommerce.backend.repository.ProductRepository;
+import com.ecommerce.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,9 @@ public class OrderService {
 
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     public List<Order> getAllOrders() {
         try {
@@ -54,8 +59,15 @@ public class OrderService {
     }
 
     @Transactional
-    public Order createOrder(OrderRequest orderRequest) {
+    public Order createOrderForUser(OrderRequest orderRequest, String username) {
+        // Find user by username
+        Optional<User> userOpt = userRepository.findByUsername(username);
+        if (userOpt.isEmpty()) {
+            throw new RuntimeException("User not found: " + username);
+        }
+
         Order order = new Order();
+        order.setUser(userOpt.get());
         order.setTotalAmount(orderRequest.getTotalAmount());
         order.setDiscountAmount(orderRequest.getDiscountAmount());
         order.setPromoCode(orderRequest.getPromoCode());
@@ -106,5 +118,81 @@ public class OrderService {
         if (!pendingOrders.isEmpty()) {
             System.out.println("Updated " + pendingOrders.size() + " orders to DELIVERED status");
         }
+    }
+
+    public List<Order> getOrdersByUsername(String username) {
+        Optional<User> userOpt = userRepository.findByUsername(username);
+        if (userOpt.isEmpty()) {
+            throw new RuntimeException("User not found: " + username);
+        }
+        return orderRepository.findByUserOrderByOrderDateDesc(userOpt.get());
+    }
+
+    public void cancelOrder(Long orderId, String username) {
+        Optional<User> userOpt = userRepository.findByUsername(username);
+        if (userOpt.isEmpty()) {
+            throw new RuntimeException("User not found: " + username);
+        }
+        
+        Optional<Order> orderOpt = orderRepository.findById(orderId);
+        if (orderOpt.isEmpty()) {
+            throw new RuntimeException("Order not found");
+        }
+        
+        Order order = orderOpt.get();
+        if (!order.getUser().getId().equals(userOpt.get().getId())) {
+            throw new RuntimeException("You can only cancel your own orders");
+        }
+        
+        if (order.getStatus() != Order.OrderStatus.PENDING) {
+            throw new RuntimeException("Only pending orders can be cancelled");
+        }
+        
+        orderRepository.delete(order);
+    }
+
+    @Transactional
+    public Order createOrder(OrderRequest orderRequest) {
+        // Find user
+        Optional<User> userOpt = userRepository.findById(orderRequest.getUserId());
+        if (userOpt.isEmpty()) {
+            throw new RuntimeException("User not found with id: " + orderRequest.getUserId());
+        }
+
+        Order order = new Order();
+        order.setUser(userOpt.get());
+        order.setTotalAmount(orderRequest.getTotalAmount());
+        order.setDiscountAmount(orderRequest.getDiscountAmount());
+        order.setPromoCode(orderRequest.getPromoCode());
+        
+        // Set address fields
+        order.setFullName(orderRequest.getFullName());
+        order.setEmail(orderRequest.getEmail());
+        order.setPhone(orderRequest.getPhone());
+        order.setStreet(orderRequest.getStreet());
+        order.setCity(orderRequest.getCity());
+        order.setState(orderRequest.getState());
+        order.setZipCode(orderRequest.getZipCode());
+        order.setCountry(orderRequest.getCountry());
+
+        // Save order first to get ID
+        order = orderRepository.save(order);
+
+        // Create order items
+        List<OrderItem> orderItems = new ArrayList<>();
+        for (OrderRequest.OrderItemRequest itemRequest : orderRequest.getItems()) {
+            Optional<Product> productOpt = productRepository.findById(itemRequest.getProductId());
+            if (productOpt.isPresent()) {
+                OrderItem orderItem = new OrderItem();
+                orderItem.setOrder(order);
+                orderItem.setProduct(productOpt.get());
+                orderItem.setQuantity(itemRequest.getQuantity());
+                orderItem.setPrice(itemRequest.getPrice());
+                orderItems.add(orderItem);
+            }
+        }
+        
+        order.setOrderItems(orderItems);
+        return orderRepository.save(order);
     }
 }

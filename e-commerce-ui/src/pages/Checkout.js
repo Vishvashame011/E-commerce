@@ -51,6 +51,13 @@ const Checkout = () => {
 
   const handlePlaceOrder = async () => {
     try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Please login to place an order');
+        navigate('/login');
+        return;
+      }
+
       const orderData = {
         totalAmount: total,
         discountAmount: discount,
@@ -70,8 +77,12 @@ const Checkout = () => {
         country: address.country
       };
       
-      // Send to backend
-      await axios.post(API_ENDPOINTS.ORDERS, orderData);
+      // Send to backend with authentication
+      await axios.post(API_ENDPOINTS.ORDERS, orderData, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       
       // Update local state
       dispatch(placeOrder(orderData));
@@ -83,7 +94,12 @@ const Checkout = () => {
       }, 3000);
     } catch (error) {
       console.error('Error placing order:', error);
-      alert('Failed to place order. Please try again.');
+      if (error.response?.status === 401) {
+        alert('Please login to place an order');
+        navigate('/login');
+      } else {
+        alert('Failed to place order. Please try again.');
+      }
     }
   };
 
