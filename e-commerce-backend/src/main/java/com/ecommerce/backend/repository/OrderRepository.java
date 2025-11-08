@@ -9,7 +9,7 @@ import java.util.List;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
-    List<Order> findByOrderByOrderDateDesc();
+    List<Order> findAllByOrderByOrderDateDesc();
     
     @Query("SELECT o FROM Order o WHERE o.status = 'PENDING' AND o.orderDate <= :cutoffTime")
     List<Order> findPendingOrdersOlderThan(LocalDateTime cutoffTime);

@@ -41,6 +41,13 @@ const Header = () => {
           >
             Add Product
           </Button>
+          <Button
+            color="inherit"
+            onClick={() => navigate('/orders')}
+            sx={{ mr: 1 }}
+          >
+            My Orders
+          </Button>
           <IconButton color="inherit" aria-label="shopping cart" onClick={() => navigate('/cart')}>
             <Badge badgeContent={cartItemCount} color="error">
               <ShoppingCart />

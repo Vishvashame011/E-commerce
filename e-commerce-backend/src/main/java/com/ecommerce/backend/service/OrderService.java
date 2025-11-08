@@ -25,11 +25,32 @@ public class OrderService {
     private ProductRepository productRepository;
 
     public List<Order> getAllOrders() {
-        return orderRepository.findByOrderByOrderDateDesc();
+        try {
+            List<Order> orders = orderRepository.findAllByOrderByOrderDateDesc();
+            System.out.println("OrderService: Retrieved " + orders.size() + " orders from repository");
+            return orders;
+        } catch (Exception e) {
+            System.err.println("OrderService error: " + e.getMessage());
+            e.printStackTrace();
+            return List.of();
+        }
     }
 
     public Optional<Order> getOrderById(Long id) {
         return orderRepository.findById(id);
+    }
+
+    public Order updateOrderStatus(Long orderId, Order.OrderStatus newStatus) {
+        Optional<Order> orderOpt = orderRepository.findById(orderId);
+        if (orderOpt.isPresent()) {
+            Order order = orderOpt.get();
+            order.setStatus(newStatus);
+            if (newStatus == Order.OrderStatus.DELIVERED) {
+                order.setDeliveryDate(LocalDateTime.now());
+            }
+            return orderRepository.save(order);
+        }
+        throw new RuntimeException("Order not found with id: " + orderId);
     }
 
     @Transactional
@@ -79,6 +100,11 @@ public class OrderService {
             order.setStatus(Order.OrderStatus.DELIVERED);
             order.setDeliveryDate(LocalDateTime.now());
             orderRepository.save(order);
+            System.out.println("Order #" + order.getId() + " status updated to DELIVERED");
+        }
+        
+        if (!pendingOrders.isEmpty()) {
+            System.out.println("Updated " + pendingOrders.size() + " orders to DELIVERED status");
         }
     }
 }

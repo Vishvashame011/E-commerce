@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, FormControl, InputLabel, Select, MenuItem, Container, Typography, CircularProgress, Box } from '@mui/material';
+import { TextField, FormControl, InputLabel, Select, MenuItem, Container, Typography, CircularProgress, Box, Button } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { API_ENDPOINTS } from '../config/api';
 import ProductCard from '../components/ProductCard';
 
 const LandingPage = () => {
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
