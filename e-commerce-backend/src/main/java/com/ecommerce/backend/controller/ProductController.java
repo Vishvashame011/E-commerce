@@ -41,6 +41,19 @@ public class ProductController {
         return ResponseEntity.ok(products);
     }
 
+    @GetMapping("/{id}/related")
+    public ResponseEntity<List<Product>> getRelatedProducts(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "4") int limit) {
+        Optional<Product> product = productService.getProductById(id);
+        if (product.isPresent()) {
+            List<Product> relatedProducts = productService.getRelatedProducts(
+                product.get().getCategory(), id, limit);
+            return ResponseEntity.ok(relatedProducts);
+        }
+        return ResponseEntity.notFound().build();
+    }
+
     @PostMapping
     public ResponseEntity<?> createProduct(
             @RequestParam("title") String title,

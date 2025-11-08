@@ -25,6 +25,11 @@ public class ProductService {
         return productRepository.findByCategoryIgnoreCase(category);
     }
 
+    public List<Product> getRelatedProducts(String category, Long excludeId, int limit) {
+        List<Product> products = productRepository.findByCategoryIgnoreCaseAndIdNot(category, excludeId);
+        return products.stream().limit(limit).collect(java.util.stream.Collectors.toList());
+    }
+
     public Product saveProduct(Product product) {
         return productRepository.save(product);
     }

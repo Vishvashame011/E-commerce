@@ -125,31 +125,48 @@ public class DataSeeder implements CommandLineRunner {
             LocalDateTime now = LocalDateTime.now();
             LocalDateTime futureDate = now.plusMonths(6);
 
-            PromoCode pc1 = new PromoCode();
-            pc1.setCode("SAVE10");
-            pc1.setDiscountPercentage(10.0);
-            pc1.setValidFrom(now);
-            pc1.setValidUntil(futureDate);
-            pc1.setIsActive(true);
-            promoCodeService.savePromoCode(pc1);
+            // Check if promo codes already exist
+            if (!promoCodeExists("SAVE10")) {
+                PromoCode pc1 = new PromoCode();
+                pc1.setCode("SAVE10");
+                pc1.setDiscountPercentage(10.0);
+                pc1.setValidFrom(now);
+                pc1.setValidUntil(futureDate);
+                pc1.setIsActive(true);
+                promoCodeService.savePromoCode(pc1);
+            }
 
-            PromoCode pc2 = new PromoCode();
-            pc2.setCode("SAVE20");
-            pc2.setDiscountPercentage(20.0);
-            pc2.setValidFrom(now);
-            pc2.setValidUntil(futureDate);
-            pc2.setIsActive(true);
-            promoCodeService.savePromoCode(pc2);
+            if (!promoCodeExists("SAVE20")) {
+                PromoCode pc2 = new PromoCode();
+                pc2.setCode("SAVE20");
+                pc2.setDiscountPercentage(20.0);
+                pc2.setValidFrom(now);
+                pc2.setValidUntil(futureDate);
+                pc2.setIsActive(true);
+                promoCodeService.savePromoCode(pc2);
+            }
 
-            PromoCode pc3 = new PromoCode();
-            pc3.setCode("WELCOME15");
-            pc3.setDiscountPercentage(15.0);
-            pc3.setValidFrom(now);
-            pc3.setValidUntil(futureDate);
-            pc3.setIsActive(true);
-            promoCodeService.savePromoCode(pc3);
+            if (!promoCodeExists("WELCOME15")) {
+                PromoCode pc3 = new PromoCode();
+                pc3.setCode("WELCOME15");
+                pc3.setDiscountPercentage(15.0);
+                pc3.setValidFrom(now);
+                pc3.setValidUntil(futureDate);
+                pc3.setIsActive(true);
+                promoCodeService.savePromoCode(pc3);
+            }
+            
+            System.out.println("Promo codes seeding completed successfully");
         } catch (Exception e) {
             System.err.println("Error seeding promo codes: " + e.getMessage());
+        }
+    }
+
+    private boolean promoCodeExists(String code) {
+        try {
+            return promoCodeService.validatePromoCode(code).isValid();
+        } catch (Exception e) {
+            return false;
         }
     }
 }
