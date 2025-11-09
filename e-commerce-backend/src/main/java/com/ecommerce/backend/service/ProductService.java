@@ -48,6 +48,7 @@ public class ProductService {
 
     public List<Product> getRelatedProducts(String category, Long excludeId, int limit) {
         List<Product> products = productRepository.findByCategoryIgnoreCaseAndIdNot(category, excludeId);
+        java.util.Collections.shuffle(products); // Randomize the order
         return products.stream().limit(limit).collect(java.util.stream.Collectors.toList());
     }
 

@@ -41,7 +41,7 @@ const ProductDetails = () => {
   const fetchRelatedProducts = async (category, currentProductId) => {
     try {
       // Use dedicated related products API
-      const response = await axios.get(API_ENDPOINTS.RELATED_PRODUCTS(currentProductId, 4));
+      const response = await axios.get(API_ENDPOINTS.RELATED_PRODUCTS(currentProductId, 5));
       setRelatedProducts(response.data);
     } catch (error) {
       console.error('Error fetching related products:', error);
@@ -50,7 +50,8 @@ const ProductDetails = () => {
         const fallbackResponse = await axios.get(API_ENDPOINTS.PRODUCTS_BY_CATEGORY(category));
         const filtered = fallbackResponse.data
           .filter(p => p.id !== currentProductId)
-          .slice(0, 4);
+          .sort(() => Math.random() - 0.5) // Shuffle array
+          .slice(0, 5);
         setRelatedProducts(filtered);
       } catch (fallbackError) {
         console.error('Error fetching fallback related products:', fallbackError);
@@ -156,9 +157,9 @@ const ProductDetails = () => {
             <Typography variant="h5" gutterBottom sx={{ mb: 3 }}>
               Related Products
             </Typography>
-            <Grid container spacing={3}>
+            <Grid container spacing={3} sx={{ justifyContent: 'center' }}>
               {relatedProducts.map((relatedProduct) => (
-                <Grid item xs={12} sm={6} md={3} key={relatedProduct.id}>
+                <Grid item xs={12} sm={6} md={2.4} key={relatedProduct.id}>
                   <ProductCard product={relatedProduct} />
                 </Grid>
               ))}
