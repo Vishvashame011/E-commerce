@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Container, Typography, Button, Rating, Box, Chip, CircularProgress, IconButton, Snackbar, Alert, Grid, Divider } from '@mui/material';
-import { ArrowBack, ShoppingCart, Favorite } from '@mui/icons-material';
+import { Container, Typography, Button, Rating, Box, Chip, CircularProgress, IconButton, Snackbar, Alert, Grid, Divider, TextField, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { ArrowBack, ShoppingCart, Favorite, Star } from '@mui/icons-material';
 import { useDispatch } from 'react-redux';
 import { addToCart } from '../store/slices/cartSlice';
-import { API_ENDPOINTS } from '../config/api';
+import { API_ENDPOINTS, UPLOAD_BASE_URL, ERROR_MESSAGES } from '../config/api';
 import ProductCard from '../components/ProductCard';
 import axios from 'axios';
 
@@ -16,6 +16,34 @@ const ProductDetails = () => {
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showSnackbar, setShowSnackbar] = useState(false);
+  const [productRating, setProductRating] = useState({ averageRating: 0, totalRatings: 0 });
+  const [userRating, setUserRating] = useState(0);
+  const [userReview, setUserReview] = useState('');
+  const [showRatingDialog, setShowRatingDialog] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [inWishlist, setInWishlist] = useState(false);
+  const [wishlistLoading, setWishlistLoading] = useState(true);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const authenticated = !!token;
+    setIsAuthenticated(authenticated);
+    
+    // If not authenticated, immediately set wishlist state
+    if (!authenticated) {
+      setInWishlist(false);
+      setWishlistLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated && id) {
+      checkWishlistStatus();
+    } else if (!isAuthenticated) {
+      setInWishlist(false);
+      setWishlistLoading(false);
+    }
+  }, [isAuthenticated, id]);
 
   useEffect(() => {
     fetchProduct();
@@ -26,6 +54,9 @@ const ProductDetails = () => {
       const response = await axios.get(API_ENDPOINTS.PRODUCT_BY_ID(id));
       setProduct(response.data);
       
+      // Fetch product rating
+      fetchProductRating();
+      
       // Fetch related products from same category
       if (response.data.category) {
         fetchRelatedProducts(response.data.category, response.data.id);
@@ -35,6 +66,45 @@ const ProductDetails = () => {
     } catch (error) {
       console.error('Error fetching product:', error);
       setLoading(false);
+    }
+  };
+
+  const fetchProductRating = async () => {
+    try {
+      const response = await axios.get(API_ENDPOINTS.PRODUCT_RATING(id));
+      setProductRating(response.data);
+    } catch (error) {
+      console.error('Error fetching product rating:', error);
+    }
+  };
+
+  const checkWishlistStatus = async () => {
+    if (!isAuthenticated) {
+      setInWishlist(false);
+      setWishlistLoading(false);
+      return;
+    }
+    
+    setWishlistLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setInWishlist(false);
+        setWishlistLoading(false);
+        return;
+      }
+      
+      const response = await axios.get(API_ENDPOINTS.WISHLIST.CHECK(id), {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      setInWishlist(response.data.inWishlist);
+    } catch (error) {
+      console.error('Error checking wishlist status:', error);
+      setInWishlist(false);
+    } finally {
+      setWishlistLoading(false);
     }
   };
 
@@ -59,9 +129,78 @@ const ProductDetails = () => {
     }
   };
 
-  const handleAddToCart = () => {
-    dispatch(addToCart(product));
-    setShowSnackbar(true);
+  const handleAddToCart = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Please login to add items to cart');
+      return;
+    }
+
+    try {
+      await axios.post(API_ENDPOINTS.CART.ADD, null, {
+        params: { productId: product.id, quantity: 1 },
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      // Dispatch cart update event
+      window.dispatchEvent(new Event('cartUpdated'));
+      setShowSnackbar(true);
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      alert('Failed to add item to cart');
+    }
+  };
+
+  const handleSubmitRating = async () => {
+    if (!isAuthenticated) {
+      alert('Please login to rate this product');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(API_ENDPOINTS.PRODUCT_RATING(id), {
+        rating: userRating,
+        review: userReview
+      }, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      setShowRatingDialog(false);
+      setUserRating(0);
+      setUserReview('');
+      fetchProductRating(); // Refresh rating
+      setShowSnackbar(true);
+    } catch (error) {
+      alert(error.response?.data?.error || ERROR_MESSAGES.SERVER_ERROR);
+    }
+  };
+
+  const handleWishlistToggle = async () => {
+    if (!isAuthenticated) {
+      alert('Please login to add items to wishlist');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(API_ENDPOINTS.WISHLIST.TOGGLE(id), {}, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      setInWishlist(response.data.inWishlist);
+      // Also refresh the wishlist status to ensure consistency
+      setTimeout(() => {
+        checkWishlistStatus();
+      }, 100);
+      setShowSnackbar(true);
+    } catch (error) {
+      alert(error.response?.data?.error || ERROR_MESSAGES.SERVER_ERROR);
+    }
   };
 
   if (loading) {
@@ -94,7 +233,7 @@ const ProductDetails = () => {
         <div className="product-details-grid">
           <Box>
             <img
-              src={product.image?.startsWith('/uploads/') ? `http://localhost:8081${product.image}` : product.image}
+              src={product.image?.startsWith('/uploads/') ? `${UPLOAD_BASE_URL}${product.image}` : product.image}
               alt={product.title}
               className="product-details-image"
             />
@@ -113,10 +252,20 @@ const ProductDetails = () => {
             </Typography>
 
             <Box className="rating-container">
-              <Rating value={product.rating?.rate || 0} readOnly />
+              <Rating value={productRating.averageRating || 0} readOnly precision={0.1} />
               <Typography variant="body2" color="text.secondary">
-                ({product.rating?.count || 0} reviews)
+                ({productRating.totalRatings || 0} reviews)
               </Typography>
+              {isAuthenticated && (
+                <Button
+                  size="small"
+                  startIcon={<Star />}
+                  onClick={() => setShowRatingDialog(true)}
+                  sx={{ ml: 2 }}
+                >
+                  Rate Product
+                </Button>
+              )}
             </Box>
 
             <Typography variant="h3" color="primary" sx={{ my: 2, fontWeight: 'bold' }}>
@@ -138,11 +287,16 @@ const ProductDetails = () => {
                 Add to Cart
               </Button>
               <Button
-                variant="outlined"
+                variant={inWishlist ? "contained" : "outlined"}
                 size="large"
-                startIcon={<Favorite />}
+                startIcon={wishlistLoading ? <CircularProgress size={20} /> : <Favorite />}
+                onClick={handleWishlistToggle}
+                color={inWishlist ? "secondary" : "primary"}
+                disabled={wishlistLoading || !isAuthenticated}
               >
-                Wishlist
+                {wishlistLoading ? 'Loading...' : 
+                 !isAuthenticated ? 'Login to Add' :
+                 inWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'}
               </Button>
             </Box>
           </Box>
@@ -174,9 +328,40 @@ const ProductDetails = () => {
         onClose={() => setShowSnackbar(false)}
       >
         <Alert onClose={() => setShowSnackbar(false)} severity="success">
-          Product added to cart!
+          {userRating > 0 ? 'Rating submitted successfully!' : 
+           showSnackbar && inWishlist ? 'Added to wishlist!' : 
+           showSnackbar && !inWishlist ? 'Removed from wishlist!' : 'Product added to cart!'}
         </Alert>
       </Snackbar>
+
+      <Dialog open={showRatingDialog} onClose={() => setShowRatingDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Rate this Product</DialogTitle>
+        <DialogContent>
+          <Box sx={{ py: 2 }}>
+            <Typography gutterBottom>Your Rating:</Typography>
+            <Rating
+              value={userRating}
+              onChange={(event, newValue) => setUserRating(newValue)}
+              size="large"
+            />
+            <TextField
+              fullWidth
+              multiline
+              rows={4}
+              label="Review (Optional)"
+              value={userReview}
+              onChange={(e) => setUserReview(e.target.value)}
+              sx={{ mt: 2 }}
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowRatingDialog(false)}>Cancel</Button>
+          <Button onClick={handleSubmitRating} variant="contained" disabled={userRating === 0}>
+            Submit Rating
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };

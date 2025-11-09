@@ -1,36 +1,85 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Container, Typography, Box, Card, CardContent, CardMedia, 
-  IconButton, Button, TextField, Divider, Grid, Chip
+  IconButton, Button, TextField, Divider, Grid, Chip, CircularProgress
 } from '@mui/material';
 import { Add, Remove, Delete, ShoppingCart } from '@mui/icons-material';
-import { useSelector, useDispatch } from 'react-redux';
-import { updateQuantity, removeFromCart, applyPromoCode } from '../store/slices/cartSlice';
 import { useNavigate } from 'react-router-dom';
-import { API_ENDPOINTS } from '../config/api';
+import { API_ENDPOINTS, UPLOAD_BASE_URL, ERROR_MESSAGES } from '../config/api';
 import axios from 'axios';
 
 const Cart = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const { items, total, itemCount, promoCode, discount } = useSelector(state => state.cart);
+  const [cartItems, setCartItems] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [promoInput, setPromoInput] = useState('');
+  const [promoCode, setPromoCode] = useState('');
+  const [discount, setDiscount] = useState(0);
 
-  const handleQuantityChange = (id, newQuantity) => {
-    if (newQuantity > 0) {
-      dispatch(updateQuantity({ id, quantity: newQuantity }));
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+    fetchCart();
+  }, [navigate]);
+
+  const fetchCart = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(API_ENDPOINTS.CART.GET, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      setCartItems(response.data);
+    } catch (error) {
+      if (error.response?.status === 401) {
+        navigate('/login');
+      } else {
+        console.error('Error fetching cart:', error);
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleRemoveItem = (id) => {
-    dispatch(removeFromCart(id));
+  const handleQuantityChange = async (productId, newQuantity) => {
+    if (newQuantity <= 0) return;
+    
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(API_ENDPOINTS.CART.UPDATE, null, {
+        params: { productId, quantity: newQuantity },
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      fetchCart(); // Refresh cart
+      window.dispatchEvent(new Event('cartUpdated')); // Update header count
+    } catch (error) {
+      console.error('Error updating quantity:', error);
+      alert('Failed to update quantity');
+    }
+  };
+
+  const handleRemoveItem = async (productId) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(API_ENDPOINTS.CART.REMOVE(productId), {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      fetchCart(); // Refresh cart
+      window.dispatchEvent(new Event('cartUpdated')); // Update header count
+    } catch (error) {
+      console.error('Error removing item:', error);
+      alert('Failed to remove item');
+    }
   };
 
   const handleApplyPromo = async () => {
     try {
       const response = await axios.get(API_ENDPOINTS.VALIDATE_PROMO(promoInput));
       if (response.data.valid) {
-        dispatch(applyPromoCode(promoInput));
+        setPromoCode(promoInput);
+        setDiscount(response.data.discountAmount || 0);
       } else {
         alert(response.data.message || 'Invalid promo code');
       }
@@ -40,9 +89,19 @@ const Cart = () => {
     }
   };
 
-  const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const subtotal = cartItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+  const total = subtotal - discount;
+  const itemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
-  if (items.length === 0) {
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (cartItems.length === 0) {
     return (
       <Container maxWidth="lg" sx={{ py: 4, textAlign: 'center' }}>
         <ShoppingCart sx={{ fontSize: 80, color: 'grey.400', mb: 2 }} />
@@ -65,31 +124,31 @@ const Cart = () => {
 
       <Grid container spacing={3}>
         <Grid item xs={12} md={8}>
-          {items.map((item) => (
+          {cartItems.map((item) => (
             <Card key={item.id} sx={{ mb: 2 }}>
               <CardContent>
                 <Box sx={{ display: 'flex', gap: 2 }}>
                   <CardMedia
                     component="img"
                     sx={{ width: 120, height: 120, objectFit: 'contain' }}
-                    image={item.image}
-                    alt={item.title}
+                    image={item.product.image?.startsWith('/uploads/') ? `${UPLOAD_BASE_URL}${item.product.image}` : item.product.image}
+                    alt={item.product.title}
                   />
                   
                   <Box sx={{ flex: 1 }}>
                     <Typography variant="h6" gutterBottom>
-                      {item.title}
+                      {item.product.title}
                     </Typography>
-                    <Chip label={item.category} size="small" sx={{ mb: 1 }} />
+                    <Chip label={item.product.category} size="small" sx={{ mb: 1 }} />
                     <Typography variant="h6" color="primary" sx={{ mb: 2 }}>
-                      ${item.price}
+                      ${item.product.price}
                     </Typography>
                     
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', border: 1, borderColor: 'grey.300', borderRadius: 1 }}>
                         <IconButton 
                           size="small" 
-                          onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                          onClick={() => handleQuantityChange(item.product.id, item.quantity - 1)}
                         >
                           <Remove />
                         </IconButton>
@@ -98,19 +157,19 @@ const Cart = () => {
                         </Typography>
                         <IconButton 
                           size="small" 
-                          onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                          onClick={() => handleQuantityChange(item.product.id, item.quantity + 1)}
                         >
                           <Add />
                         </IconButton>
                       </Box>
                       
                       <Typography variant="body1" sx={{ ml: 'auto', mr: 2 }}>
-                        Total: ${(item.price * item.quantity).toFixed(2)}
+                        Total: ${(item.product.price * item.quantity).toFixed(2)}
                       </Typography>
                       
                       <IconButton 
                         color="error" 
-                        onClick={() => handleRemoveItem(item.id)}
+                        onClick={() => handleRemoveItem(item.product.id)}
                       >
                         <Delete />
                       </IconButton>

@@ -8,7 +8,6 @@ import ProductCard from '../components/ProductCard';
 const LandingPage = () => {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -23,15 +22,67 @@ const LandingPage = () => {
   }, []);
 
   useEffect(() => {
-    filterProducts();
-  }, [products, searchTerm, selectedCategory]);
+    setCurrentPage(1);
+    fetchProducts(0);
+  }, [selectedCategory]);
+
+  useEffect(() => {
+    if (searchTerm) {
+      const timeoutId = setTimeout(() => {
+        setCurrentPage(1);
+        fetchProducts(0);
+      }, 500);
+      return () => clearTimeout(timeoutId);
+    } else if (!selectedCategory) {
+      setCurrentPage(1);
+      fetchProducts(0);
+    }
+  }, [searchTerm]);
 
   const fetchProducts = async (page = 0) => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_ENDPOINTS.PRODUCTS}?page=${page}&size=${PRODUCTS_PER_PAGE}`);
-      setProducts(response.data.products || []);
-      setTotalPages(response.data.totalPages || 0);
+      let url;
+      let params = `page=${page}&size=${PRODUCTS_PER_PAGE}`;
+      
+      if (selectedCategory) {
+        // Fetch category-specific products with pagination
+        url = `${API_ENDPOINTS.PRODUCTS_BY_CATEGORY(selectedCategory)}?${params}`;
+      } else {
+        // Fetch all products with pagination
+        url = `${API_ENDPOINTS.PRODUCTS}?${params}`;
+      }
+      
+      // Add search term if present
+      if (searchTerm && !selectedCategory) {
+        params += `&search=${encodeURIComponent(searchTerm)}`;
+        url = `${API_ENDPOINTS.PRODUCTS}?${params}`;
+      }
+      
+      const response = await axios.get(url);
+      
+      if (selectedCategory && !response.data.products) {
+        // Handle category response (array format)
+        const categoryProducts = response.data || [];
+        const filteredProducts = searchTerm ? 
+          categoryProducts.filter(product =>
+            product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            product.description.toLowerCase().includes(searchTerm.toLowerCase())
+          ) : categoryProducts;
+        
+        // Manual pagination for category products
+        const startIndex = page * PRODUCTS_PER_PAGE;
+        const endIndex = startIndex + PRODUCTS_PER_PAGE;
+        const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
+        
+        setProducts(paginatedProducts);
+        setTotalPages(Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE));
+      } else {
+        // Handle paginated response
+        setProducts(response.data.products || []);
+        setTotalPages(response.data.totalPages || 0);
+      }
+      
       setCurrentPage(page + 1);
       setError('');
     } catch (error) {
@@ -51,22 +102,7 @@ const LandingPage = () => {
     }
   };
 
-  const filterProducts = () => {
-    let filtered = products;
 
-    if (searchTerm) {
-      filtered = filtered.filter(product =>
-        product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    if (selectedCategory) {
-      filtered = filtered.filter(product => product.category === selectedCategory);
-    }
-
-    setFilteredProducts(filtered);
-  };
 
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
@@ -74,6 +110,7 @@ const LandingPage = () => {
 
   const handleCategoryChange = (event) => {
     setSelectedCategory(event.target.value);
+    setSearchTerm(''); // Clear search when changing category
   };
 
   const handlePageChange = (event, page) => {
@@ -125,14 +162,14 @@ const LandingPage = () => {
         
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
         
-        {filteredProducts.length === 0 && !loading ? (
+        {products.length === 0 && !loading ? (
           <Typography variant="h6" textAlign="center" color="text.secondary">
             No products found matching your criteria.
           </Typography>
         ) : (
           <>
             <div className="product-grid">
-              {filteredProducts.map((product) => (
+              {products.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
