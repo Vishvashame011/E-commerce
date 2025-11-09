@@ -69,8 +69,8 @@ const Header = () => {
     setIsAuthenticated(false);
     setUser(null);
     setCartItemCount(0);
-    navigate('/');
     handleProfileClose();
+    window.location.reload();
   };
 
   // Expose cart refresh function globally

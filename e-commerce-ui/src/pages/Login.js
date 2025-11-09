@@ -51,7 +51,6 @@ const Login = () => {
           username: data.username,
           email: data.email
         }));
-        navigate('/');
         window.location.reload();
       } else {
         setError(data.error || ERROR_MESSAGES.UNAUTHORIZED);
