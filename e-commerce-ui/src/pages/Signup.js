@@ -48,14 +48,7 @@ const Signup = () => {
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify({
-          id: data.id,
-          username: data.username,
-          email: data.email
-        }));
-        navigate('/');
-        window.location.reload();
+        navigate('/login');
       } else {
         setError(data.error || ERROR_MESSAGES.VALIDATION_ERROR);
       }
