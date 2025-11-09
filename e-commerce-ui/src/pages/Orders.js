@@ -5,7 +5,7 @@ import {
 } from '@mui/material';
 import { ShoppingBag, LocalShipping, CheckCircle, Refresh, AccessTime } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { API_ENDPOINTS } from '../config/api';
+import { API_ENDPOINTS, ERROR_MESSAGES } from '../config/api';
 import OrderStatusTracker from '../components/OrderStatusTracker';
 import axios from 'axios';
 
@@ -29,21 +29,18 @@ const Orders = () => {
         return;
       }
 
-      console.log('Fetching user orders from:', `${API_ENDPOINTS.ORDERS}/my-orders`);
       const response = await axios.get(`${API_ENDPOINTS.ORDERS}/my-orders`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
-      console.log('Backend response:', response.data);
-      console.log('Number of orders received:', response.data.length);
       setBackendOrders(response.data);
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching orders:', error);
-      console.error('Error details:', error.response?.data);
       if (error.response?.status === 401) {
         navigate('/login');
+      } else {
+        console.error('Error fetching orders:', error.message);
       }
       setLoading(false);
     }
@@ -96,7 +93,8 @@ const Orders = () => {
       // Refresh orders after cancellation
       fetchBackendOrders();
     } catch (error) {
-      alert('Failed to cancel order: ' + (error.response?.data?.error || error.message));
+      const errorMsg = error.response?.data?.error || ERROR_MESSAGES.SERVER_ERROR;
+      alert('Failed to cancel order: ' + errorMsg);
     }
   };
 

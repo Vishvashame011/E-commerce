@@ -12,7 +12,7 @@ import {
   Divider
 } from '@mui/material';
 import { PhotoCamera } from '@mui/icons-material';
-import { API_ENDPOINTS, API_BASE_URL } from '../config/api';
+import { API_ENDPOINTS, UPLOAD_BASE_URL, ERROR_MESSAGES } from '../config/api';
 
 const Profile = () => {
   const [profile, setProfile] = useState({
@@ -49,10 +49,10 @@ const Profile = () => {
         const data = await response.json();
         setProfile(data);
       } else {
-        setError('Failed to load profile');
+        setError(ERROR_MESSAGES.SERVER_ERROR);
       }
     } catch (error) {
-      setError('Network error. Please try again.');
+      setError(ERROR_MESSAGES.NETWORK_ERROR);
     }
   };
 
@@ -86,10 +86,10 @@ const Profile = () => {
         setProfile(data);
         setMessage('Profile updated successfully!');
       } else {
-        setError(data.error || 'Failed to update profile');
+        setError(data.error || ERROR_MESSAGES.VALIDATION_ERROR);
       }
     } catch (error) {
-      setError('Network error. Please try again.');
+      setError(ERROR_MESSAGES.NETWORK_ERROR);
     } finally {
       setLoading(false);
     }
@@ -118,10 +118,10 @@ const Profile = () => {
         setProfile(data);
         setMessage('Profile image updated successfully!');
       } else {
-        setError(data.error || 'Failed to upload image');
+        setError(data.error || ERROR_MESSAGES.VALIDATION_ERROR);
       }
     } catch (error) {
-      setError('Network error. Please try again.');
+      setError(ERROR_MESSAGES.NETWORK_ERROR);
     }
   };
 
@@ -138,8 +138,8 @@ const Profile = () => {
         <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
           <Box sx={{ position: 'relative' }}>
             <Avatar
-              src={profile.profileImage ? `http://localhost:8081${profile.profileImage}` : ''}
-              sx={{ width: 120, height: 120 }}
+              src={profile.profileImage ? `${UPLOAD_BASE_URL}${profile.profileImage}` : ''}
+              sx={{ width: { xs: 100, sm: 120 }, height: { xs: 100, sm: 120 } }}
             />
             <Button
               component="label"

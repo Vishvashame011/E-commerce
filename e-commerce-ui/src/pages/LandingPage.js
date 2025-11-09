@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, FormControl, InputLabel, Select, MenuItem, Container, Typography, CircularProgress, Box, Button } from '@mui/material';
+import { TextField, FormControl, InputLabel, Select, MenuItem, Container, Typography, CircularProgress, Box, Pagination, Alert } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { API_ENDPOINTS } from '../config/api';
+import { API_ENDPOINTS, PRODUCTS_PER_PAGE, ERROR_MESSAGES } from '../config/api';
 import ProductCard from '../components/ProductCard';
 
 const LandingPage = () => {
@@ -13,9 +13,12 @@ const LandingPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [categories, setCategories] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    fetchProducts();
+    fetchProducts(0);
     fetchCategories();
   }, []);
 
@@ -23,23 +26,26 @@ const LandingPage = () => {
     filterProducts();
   }, [products, searchTerm, selectedCategory]);
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (page = 0) => {
     try {
-      const response = await axios.get(API_ENDPOINTS.PRODUCTS);
-      setProducts(response.data);
-      setLoading(false);
+      setLoading(true);
+      const response = await axios.get(`${API_ENDPOINTS.PRODUCTS}?page=${page}&size=${PRODUCTS_PER_PAGE}`);
+      setProducts(response.data.products || []);
+      setTotalPages(response.data.totalPages || 0);
+      setCurrentPage(page + 1);
+      setError('');
     } catch (error) {
       console.error('Error fetching products:', error);
+      setError(ERROR_MESSAGES.SERVER_ERROR);
+    } finally {
       setLoading(false);
     }
   };
 
   const fetchCategories = async () => {
     try {
-      // Get unique categories from products
-      const response = await axios.get(API_ENDPOINTS.PRODUCTS);
-      const uniqueCategories = [...new Set(response.data.map(product => product.category))];
-      setCategories(uniqueCategories);
+      const response = await axios.get(API_ENDPOINTS.PRODUCT_CATEGORIES);
+      setCategories(response.data || []);
     } catch (error) {
       console.error('Error fetching categories:', error);
     }
@@ -68,6 +74,11 @@ const LandingPage = () => {
 
   const handleCategoryChange = (event) => {
     setSelectedCategory(event.target.value);
+  };
+
+  const handlePageChange = (event, page) => {
+    setCurrentPage(page);
+    fetchProducts(page - 1);
   };
 
   if (loading) {
@@ -112,16 +123,34 @@ const LandingPage = () => {
           Our Products
         </Typography>
         
-        {filteredProducts.length === 0 ? (
+        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        
+        {filteredProducts.length === 0 && !loading ? (
           <Typography variant="h6" textAlign="center" color="text.secondary">
             No products found matching your criteria.
           </Typography>
         ) : (
-          <div className="product-grid">
-            {filteredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          <>
+            <div className="product-grid">
+              {filteredProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+            
+            {totalPages > 1 && (
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4, mb: 2 }}>
+                <Pagination
+                  count={totalPages}
+                  page={currentPage}
+                  onChange={handlePageChange}
+                  color="primary"
+                  size="large"
+                  showFirstButton
+                  showLastButton
+                />
+              </Box>
+            )}
+          </>
         )}
       </Container>
     </Container>
