@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { AppBar, Toolbar, Typography, IconButton, Box, Badge, Menu, MenuItem, Button } from '@mui/material';
 import { ShoppingCart, Notifications, AccountCircle, Store, Add, Login } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { API_ENDPOINTS } from '../config/api';
+import axios from 'axios';
 
 const Header = () => {
   const navigate = useNavigate();
-  const cartItemCount = useSelector(state => state.cart.itemCount);
+  const [cartItemCount, setCartItemCount] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
@@ -17,8 +18,37 @@ const Header = () => {
     if (token && userData) {
       setIsAuthenticated(true);
       setUser(JSON.parse(userData));
+      fetchCartCount();
     }
   }, []);
+
+  // Listen for cart updates
+  useEffect(() => {
+    const handleCartUpdate = () => {
+      fetchCartCount();
+    };
+
+    window.addEventListener('cartUpdated', handleCartUpdate);
+    return () => window.removeEventListener('cartUpdated', handleCartUpdate);
+  }, []);
+
+  const fetchCartCount = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setCartItemCount(0);
+        return;
+      }
+      
+      const response = await axios.get(API_ENDPOINTS.CART.COUNT, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      setCartItemCount(response.data.cartItemCount || 0);
+    } catch (error) {
+      console.error('Error fetching cart count:', error);
+      setCartItemCount(0);
+    }
+  };
 
   const handleProfileClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -38,9 +68,13 @@ const Header = () => {
     localStorage.removeItem('user');
     setIsAuthenticated(false);
     setUser(null);
+    setCartItemCount(0);
     navigate('/');
     handleProfileClose();
   };
+
+  // Expose cart refresh function globally
+  window.refreshCartCount = fetchCartCount;
 
   return (
     <AppBar position="sticky">
@@ -70,6 +104,13 @@ const Header = () => {
               >
                 My Orders
               </Button>
+              <Button
+                color="inherit"
+                onClick={() => navigate('/wishlist')}
+                sx={{ mr: 1 }}
+              >
+                Wishlist
+              </Button>
               <IconButton color="inherit" aria-label="shopping cart" onClick={() => navigate('/cart')}>
                 <Badge badgeContent={cartItemCount} color="error">
                   <ShoppingCart />
@@ -88,6 +129,7 @@ const Header = () => {
               >
                 <MenuItem onClick={() => handleMenuItemClick('/profile')}>Profile</MenuItem>
                 <MenuItem onClick={() => handleMenuItemClick('/orders')}>My Orders</MenuItem>
+                <MenuItem onClick={() => handleMenuItemClick('/wishlist')}>Wishlist</MenuItem>
                 <MenuItem onClick={handleLogout}>Logout</MenuItem>
               </Menu>
             </>

@@ -14,6 +14,7 @@ import AddProduct from './pages/AddProduct';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Profile from './pages/Profile';
+import Wishlist from './pages/Wishlist';
 import './App.css';
 
 const theme = createTheme({
@@ -45,6 +46,7 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/wishlist" element={<Wishlist />} />
             </Routes>
           </div>
         </Router>

@@ -7,6 +7,7 @@ export const API_ENDPOINTS = {
   PRODUCT_BY_ID: (id) => `${API_BASE_URL}/products/${id}`,
   PRODUCTS_BY_CATEGORY: (category) => `${API_BASE_URL}/products/category/${category}`,
   PRODUCT_CATEGORIES: `${API_BASE_URL}/products/categories`,
+  PRODUCT_RATING: (id) => `${API_BASE_URL}/products/${id}/rating`,
   RELATED_PRODUCTS: (id, limit = 4) => `${API_BASE_URL}/products/${id}/related?limit=${limit}`,
   VALIDATE_PROMO: (code) => `${API_BASE_URL}/promo-codes/validate/${code}`,
   ORDERS: `${API_BASE_URL}/orders`,
@@ -18,6 +19,19 @@ export const API_ENDPOINTS = {
   USERS: {
     PROFILE: `${API_BASE_URL}/users/profile`,
     PROFILE_IMAGE: `${API_BASE_URL}/users/profile/image`
+  },
+  WISHLIST: {
+    GET: `${API_BASE_URL}/wishlist`,
+    TOGGLE: (id) => `${API_BASE_URL}/wishlist/toggle/${id}`,
+    CHECK: (id) => `${API_BASE_URL}/wishlist/check/${id}`
+  },
+  CART: {
+    GET: `${API_BASE_URL}/cart`,
+    ADD: `${API_BASE_URL}/cart/add`,
+    UPDATE: `${API_BASE_URL}/cart/update`,
+    REMOVE: (id) => `${API_BASE_URL}/cart/remove/${id}`,
+    CLEAR: `${API_BASE_URL}/cart/clear`,
+    COUNT: `${API_BASE_URL}/cart/count`
   }
 };
 

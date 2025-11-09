@@ -36,6 +36,12 @@ public class ProductService {
         return productRepository.findByCategoryIgnoreCase(category);
     }
 
+    public Page<Product> getProductsByCategory(String category, Pageable pageable) {
+        logger.info("Fetching products for category {} with pagination: page {}, size {}", 
+                   category, pageable.getPageNumber(), pageable.getPageSize());
+        return productRepository.findByCategoryIgnoreCase(category, pageable);
+    }
+
     public List<String> getAllCategories() {
         logger.info("Fetching all unique categories");
         List<Product> products = productRepository.findAll();

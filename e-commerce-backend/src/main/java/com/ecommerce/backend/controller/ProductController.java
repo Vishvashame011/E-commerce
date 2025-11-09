@@ -1,8 +1,12 @@
 package com.ecommerce.backend.controller;
 
+import com.ecommerce.backend.dto.ProductRatingResponse;
+import com.ecommerce.backend.dto.RatingRequest;
 import com.ecommerce.backend.entity.Product;
 import com.ecommerce.backend.service.ProductService;
+import com.ecommerce.backend.service.ProductRatingService;
 import com.ecommerce.backend.service.FileStorageService;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
@@ -27,6 +32,9 @@ public class ProductController {
 
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private ProductRatingService productRatingService;
 
     @Autowired
     private FileStorageService fileStorageService;
@@ -61,9 +69,33 @@ public class ProductController {
     }
 
     @GetMapping("/category/{category}")
-    public ResponseEntity<List<Product>> getProductsByCategory(@PathVariable String category) {
-        List<Product> products = productService.getProductsByCategory(category);
-        return ResponseEntity.ok(products);
+    public ResponseEntity<?> getProductsByCategory(
+            @PathVariable String category,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        try {
+            if (page == 0 && size == 20) {
+                // Default behavior - return all products for backward compatibility
+                List<Product> products = productService.getProductsByCategory(category);
+                return ResponseEntity.ok(products);
+            } else {
+                // Paginated response
+                Pageable pageable = PageRequest.of(page, size);
+                Page<Product> products = productService.getProductsByCategory(category, pageable);
+                
+                Map<String, Object> response = new HashMap<>();
+                response.put("products", products.getContent());
+                response.put("currentPage", products.getNumber());
+                response.put("totalItems", products.getTotalElements());
+                response.put("totalPages", products.getTotalPages());
+                
+                logger.info("Retrieved {} products for category {} page {}", products.getContent().size(), category, page);
+                return ResponseEntity.ok(response);
+            }
+        } catch (Exception e) {
+            logger.error("Error retrieving products for category {}: {}", category, e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error", "Failed to retrieve products"));
+        }
     }
 
     @GetMapping("/categories")
@@ -159,5 +191,35 @@ public class ProductController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/{id}/rating")
+    public ResponseEntity<ProductRatingResponse> getProductRating(@PathVariable Long id) {
+        try {
+            ProductRatingResponse rating = productRatingService.getProductRating(id);
+            return ResponseEntity.ok(rating);
+        } catch (Exception e) {
+            logger.error("Error getting product rating: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PostMapping("/{id}/rating")
+    public ResponseEntity<?> addProductRating(
+            @PathVariable Long id,
+            @Valid @RequestBody RatingRequest ratingRequest,
+            Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Authentication required"));
+        }
+        
+        try {
+            productRatingService.addOrUpdateRating(id, authentication.getName(), ratingRequest);
+            ProductRatingResponse updatedRating = productRatingService.getProductRating(id);
+            return ResponseEntity.ok(updatedRating);
+        } catch (RuntimeException e) {
+            logger.error("Error adding product rating: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 }
