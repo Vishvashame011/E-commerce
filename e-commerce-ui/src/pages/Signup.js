@@ -10,7 +10,7 @@ import {
   Link
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { API_ENDPOINTS } from '../config/api';
+import { API_ENDPOINTS, ERROR_MESSAGES } from '../config/api';
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -57,10 +57,10 @@ const Signup = () => {
         navigate('/');
         window.location.reload();
       } else {
-        setError(data.error || 'Signup failed');
+        setError(data.error || ERROR_MESSAGES.VALIDATION_ERROR);
       }
     } catch (error) {
-      setError('Network error. Please try again.');
+      setError(ERROR_MESSAGES.NETWORK_ERROR);
     } finally {
       setLoading(false);
     }

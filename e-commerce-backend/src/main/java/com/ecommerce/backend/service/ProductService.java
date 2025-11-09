@@ -2,7 +2,11 @@ package com.ecommerce.backend.service;
 
 import com.ecommerce.backend.entity.Product;
 import com.ecommerce.backend.repository.ProductRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
@@ -10,8 +14,15 @@ import java.util.Optional;
 @Service
 public class ProductService {
 
+    private static final Logger logger = LoggerFactory.getLogger(ProductService.class);
+
     @Autowired
     private ProductRepository productRepository;
+
+    public Page<Product> getAllProducts(Pageable pageable) {
+        logger.info("Fetching products with pagination: page {}, size {}", pageable.getPageNumber(), pageable.getPageSize());
+        return productRepository.findAll(pageable);
+    }
 
     public List<Product> getAllProducts() {
         return productRepository.findAll();
@@ -23,6 +34,16 @@ public class ProductService {
 
     public List<Product> getProductsByCategory(String category) {
         return productRepository.findByCategoryIgnoreCase(category);
+    }
+
+    public List<String> getAllCategories() {
+        logger.info("Fetching all unique categories");
+        List<Product> products = productRepository.findAll();
+        return products.stream()
+                .map(Product::getCategory)
+                .distinct()
+                .sorted()
+                .collect(java.util.stream.Collectors.toList());
     }
 
     public List<Product> getRelatedProducts(String category, Long excludeId, int limit) {
