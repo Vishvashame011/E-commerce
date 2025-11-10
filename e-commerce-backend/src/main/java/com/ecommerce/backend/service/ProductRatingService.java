@@ -11,8 +11,13 @@ import com.ecommerce.backend.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -33,6 +38,39 @@ public class ProductRatingService {
         Double avgRating = productRatingRepository.getAverageRatingByProductId(productId);
         Long totalRatings = productRatingRepository.getRatingCountByProductId(productId);
         return new ProductRatingResponse(avgRating, totalRatings);
+    }
+
+    public Map<String, Object> getProductRatingWithDistribution(Long productId) {
+        Double avgRating = productRatingRepository.getAverageRatingByProductId(productId);
+        Long totalRatings = productRatingRepository.getRatingCountByProductId(productId);
+        
+        // Get rating distribution from database
+        Object[][] distribution = productRatingRepository.getRatingDistributionByProductId(productId);
+        Map<Integer, Long> ratingCounts = new HashMap<>();
+        
+        // Initialize all ratings to 0
+        for (int i = 1; i <= 5; i++) {
+            ratingCounts.put(i, 0L);
+        }
+        
+        // Fill actual counts from database
+        for (Object[] row : distribution) {
+            Integer rating = (Integer) row[0];
+            Long count = (Long) row[1];
+            ratingCounts.put(rating, count);
+        }
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("averageRating", avgRating);
+        result.put("totalRatings", totalRatings);
+        result.put("ratingDistribution", ratingCounts);
+        
+        return result;
+    }
+
+    public Page<ProductRating> getProductReviews(Long productId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return productRatingRepository.findByProductIdOrderByCreatedAtDesc(productId, pageable);
     }
 
     @Transactional

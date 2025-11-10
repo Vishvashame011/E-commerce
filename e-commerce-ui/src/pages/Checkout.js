@@ -53,9 +53,10 @@ const Checkout = () => {
       // Load saved promo code
       const savedPromo = localStorage.getItem('appliedPromoCode');
       const savedDiscount = localStorage.getItem('promoDiscount');
-      if (savedPromo) {
+      if (savedPromo && savedDiscount) {
         setPromoCode(savedPromo);
         setDiscount(parseFloat(savedDiscount) || 0);
+        console.log('Loaded promo:', savedPromo, 'Discount:', parseFloat(savedDiscount));
       }
     } catch (error) {
       if (error.response?.status === 401) {
@@ -69,7 +70,12 @@ const Checkout = () => {
   };
 
   const subtotal = cartItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
-  const total = subtotal - discount;
+  const total = Math.max(0, subtotal - discount); // Ensure total is never negative
+  
+  // Debug logging
+  useEffect(() => {
+    console.log('Checkout - Subtotal:', subtotal, 'Discount:', discount, 'Total:', total);
+  }, [subtotal, discount, total]);
 
   const handleInputChange = (field, value) => {
     setAddress(prev => ({ ...prev, [field]: value }));

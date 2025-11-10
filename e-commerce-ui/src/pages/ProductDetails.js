@@ -6,6 +6,7 @@ import { useDispatch } from 'react-redux';
 import { addToCart } from '../store/slices/cartSlice';
 import { API_ENDPOINTS, UPLOAD_BASE_URL, ERROR_MESSAGES } from '../config/api';
 import ProductCard from '../components/ProductCard';
+import ProductReviews from '../components/ProductReviews';
 import axios from 'axios';
 
 const ProductDetails = () => {
@@ -321,6 +322,10 @@ const ProductDetails = () => {
           </Box>
         </>
       )}
+      
+      {/* Reviews Section */}
+      <Divider sx={{ my: 4 }} />
+      <ProductReviews productId={id} />
       
       <Snackbar
         open={showSnackbar}
