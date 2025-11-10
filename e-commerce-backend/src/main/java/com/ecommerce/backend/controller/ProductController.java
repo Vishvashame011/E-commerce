@@ -3,6 +3,7 @@ package com.ecommerce.backend.controller;
 import com.ecommerce.backend.dto.ProductRatingResponse;
 import com.ecommerce.backend.dto.RatingRequest;
 import com.ecommerce.backend.entity.Product;
+import com.ecommerce.backend.entity.ProductRating;
 import com.ecommerce.backend.service.ProductService;
 import com.ecommerce.backend.service.ProductRatingService;
 import com.ecommerce.backend.service.FileStorageService;
@@ -194,10 +195,10 @@ public class ProductController {
     }
 
     @GetMapping("/{id}/rating")
-    public ResponseEntity<ProductRatingResponse> getProductRating(@PathVariable Long id) {
+    public ResponseEntity<?> getProductRating(@PathVariable Long id) {
         try {
-            ProductRatingResponse rating = productRatingService.getProductRating(id);
-            return ResponseEntity.ok(rating);
+            Map<String, Object> ratingData = productRatingService.getProductRatingWithDistribution(id);
+            return ResponseEntity.ok(ratingData);
         } catch (Exception e) {
             logger.error("Error getting product rating: {}", e.getMessage());
             return ResponseEntity.badRequest().build();
@@ -215,11 +216,25 @@ public class ProductController {
         
         try {
             productRatingService.addOrUpdateRating(id, authentication.getName(), ratingRequest);
-            ProductRatingResponse updatedRating = productRatingService.getProductRating(id);
+            Map<String, Object> updatedRating = productRatingService.getProductRatingWithDistribution(id);
             return ResponseEntity.ok(updatedRating);
         } catch (RuntimeException e) {
             logger.error("Error adding product rating: {}", e.getMessage());
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/{id}/reviews")
+    public ResponseEntity<Page<ProductRating>> getProductReviews(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        try {
+            Page<ProductRating> reviews = productRatingService.getProductReviews(id, page, size);
+            return ResponseEntity.ok(reviews);
+        } catch (Exception e) {
+            logger.error("Error getting product reviews: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
         }
     }
 }

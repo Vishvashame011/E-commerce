@@ -1,29 +1,21 @@
-# Dependencies
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# ===================================
+# E-Commerce Project .gitignore
+# ===================================
 
-# Production builds
-build/
-dist/
-out/
+# ===== BACKEND (Java/Spring Boot) =====
+# Maven
+e-commerce-backend/target/
+e-commerce-backend/.mvn/wrapper/maven-wrapper.jar
+e-commerce-backend/.mvn/wrapper/maven-wrapper.properties
 
-# Environment variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# IDE Files
+e-commerce-backend/.idea/
+e-commerce-backend/.vscode/
+e-commerce-backend/*.iml
+e-commerce-backend/*.ipr
+e-commerce-backend/*.iws
 
-# IDE files
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS generated files
+# OS Files
 .DS_Store
 .DS_Store?
 ._*
@@ -32,40 +24,94 @@ out/
 ehthumbs.db
 Thumbs.db
 
-# Java/Spring Boot
-target/
-*.jar
-*.war
-*.ear
-*.class
-.mvn/wrapper/maven-wrapper.jar
-.mvn/wrapper/maven-wrapper.properties
+# Logs
+e-commerce-backend/logs/
+e-commerce-backend/*.log
+e-commerce-backend/spring.log
+
+# Application Properties (sensitive)
+e-commerce-backend/src/main/resources/application-prod.properties
+e-commerce-backend/src/main/resources/application-local.properties
 
 # Database
-*.db
-*.sqlite
-*.sqlite3
+e-commerce-backend/*.db
+e-commerce-backend/*.sqlite
 
-# Logs
-logs/
-*.log
+# Uploads Directory (keep structure, ignore files)
+e-commerce-backend/uploads/*
+!e-commerce-backend/uploads/.gitkeep
 
-# Uploads directory (contains user uploaded files)
-e-commerce-backend/uploads/
+# ===== FRONTEND (React/Node.js) =====
+# Dependencies
+e-commerce-ui/node_modules/
+e-commerce-ui/npm-debug.log*
+e-commerce-ui/yarn-debug.log*
+e-commerce-ui/yarn-error.log*
 
-# Package files
-*.tgz
-*.tar.gz
+# Production Build
+e-commerce-ui/build/
+e-commerce-ui/dist/
 
-# Runtime data
-pids/
-*.pid
-*.seed
-*.pid.lock
+# Environment Variables
+e-commerce-ui/.env.local
+e-commerce-ui/.env.development.local
+e-commerce-ui/.env.test.local
+e-commerce-ui/.env.production.local
 
-# Coverage directory used by tools like istanbul
-coverage/
+# IDE Files
+e-commerce-ui/.vscode/
+e-commerce-ui/.idea/
 
-# Temporary folders
-tmp/
-temp/
+# Testing
+e-commerce-ui/coverage/
+
+# Misc
+e-commerce-ui/.eslintcache
+
+# ===== PROJECT ROOT =====
+# Temporary Files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# IDE Files
+.idea/
+.vscode/
+*.iml
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Database Backups
+*.sql.backup
+*.dump
+
+# Scripts (keep useful ones)
+!setup-*.sh
+!test-*.sh
+
+# Documentation temp files
+*.pdf.tmp
+*.docx.tmp
+
+# ===== SECURITY =====
+# Never commit these
+*.key
+*.pem
+*.p12
+*.jks
+config/secrets/
+.env
+.env.*
+!.env.example
+
+# Database credentials
+database.properties
+db-config.properties
+
+# JWT secrets
+jwt.secret
+application-secrets.properties

@@ -85,12 +85,16 @@ const Cart = () => {
   const handleApplyPromo = async () => {
     try {
       const response = await axios.get(API_ENDPOINTS.VALIDATE_PROMO(promoInput));
+      console.log('Promo validation response:', response.data);
       if (response.data.valid) {
+        const discountPercentage = response.data.discountPercentage || 0;
+        const discountAmount = (subtotal * discountPercentage) / 100;
         setPromoCode(promoInput);
-        setDiscount(response.data.discountAmount || 0);
+        setDiscount(discountAmount);
         // Store promo code in localStorage for checkout page
         localStorage.setItem('appliedPromoCode', promoInput);
-        localStorage.setItem('promoDiscount', response.data.discountAmount || 0);
+        localStorage.setItem('promoDiscount', discountAmount.toString());
+        console.log('Applied promo:', promoInput, 'Percentage:', discountPercentage, 'Amount:', discountAmount);
       } else {
         alert(response.data.message || 'Invalid promo code');
       }
@@ -101,7 +105,7 @@ const Cart = () => {
   };
 
   const subtotal = cartItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
-  const total = subtotal - discount;
+  const total = Math.max(0, subtotal - discount); // Ensure total is never negative
   const itemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   if (loading) {

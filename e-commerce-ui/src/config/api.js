@@ -32,6 +32,11 @@ export const API_ENDPOINTS = {
     REMOVE: (id) => `${API_BASE_URL}/cart/remove/${id}`,
     CLEAR: `${API_BASE_URL}/cart/clear`,
     COUNT: `${API_BASE_URL}/cart/count`
+  },
+  REVIEWS: {
+    GET: (productId) => `${API_BASE_URL}/products/${productId}/reviews`,
+    ADD: (productId) => `${API_BASE_URL}/products/${productId}/rating`,
+    STATS: (productId) => `${API_BASE_URL}/products/${productId}/rating`
   }
 };
 
