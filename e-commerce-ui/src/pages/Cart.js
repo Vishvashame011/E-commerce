@@ -23,6 +23,14 @@ const Cart = () => {
       return;
     }
     fetchCart();
+    // Load saved promo code
+    const savedPromo = localStorage.getItem('appliedPromoCode');
+    const savedDiscount = localStorage.getItem('promoDiscount');
+    if (savedPromo) {
+      setPromoCode(savedPromo);
+      setPromoInput(savedPromo);
+      setDiscount(parseFloat(savedDiscount) || 0);
+    }
   }, [navigate]);
 
   const fetchCart = async () => {
@@ -80,6 +88,9 @@ const Cart = () => {
       if (response.data.valid) {
         setPromoCode(promoInput);
         setDiscount(response.data.discountAmount || 0);
+        // Store promo code in localStorage for checkout page
+        localStorage.setItem('appliedPromoCode', promoInput);
+        localStorage.setItem('promoDiscount', response.data.discountAmount || 0);
       } else {
         alert(response.data.message || 'Invalid promo code');
       }
