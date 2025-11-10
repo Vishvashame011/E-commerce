@@ -1,19 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Container, Typography, Box, Card, CardContent, TextField,
-  Button, Grid, Divider, Alert, Stepper, Step, StepLabel
+  Button, Grid, Divider, Alert, Stepper, Step, StepLabel, CircularProgress
 } from '@mui/material';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { placeOrder } from '../store/slices/orderSlice';
 import { clearCart } from '../store/slices/cartSlice';
-import { API_ENDPOINTS } from '../config/api';
+import { API_ENDPOINTS, UPLOAD_BASE_URL } from '../config/api';
 import axios from 'axios';
 
 const Checkout = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { items, total, promoCode, discount } = useSelector(state => state.cart);
+  const [cartItems, setCartItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [promoCode, setPromoCode] = useState('');
+  const [discount, setDiscount] = useState(0);
   const [activeStep, setActiveStep] = useState(0);
   const [orderPlaced, setOrderPlaced] = useState(false);
   
@@ -29,6 +32,44 @@ const Checkout = () => {
   });
 
   const steps = ['Delivery Address', 'Review Order', 'Payment'];
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+    fetchCart();
+  }, [navigate]);
+
+  const fetchCart = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(API_ENDPOINTS.CART.GET, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      setCartItems(response.data);
+      
+      // Load saved promo code
+      const savedPromo = localStorage.getItem('appliedPromoCode');
+      const savedDiscount = localStorage.getItem('promoDiscount');
+      if (savedPromo) {
+        setPromoCode(savedPromo);
+        setDiscount(parseFloat(savedDiscount) || 0);
+      }
+    } catch (error) {
+      if (error.response?.status === 401) {
+        navigate('/login');
+      } else {
+        console.error('Error fetching cart:', error);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const subtotal = cartItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+  const total = subtotal - discount;
 
   const handleInputChange = (field, value) => {
     setAddress(prev => ({ ...prev, [field]: value }));
@@ -62,10 +103,10 @@ const Checkout = () => {
         totalAmount: total,
         discountAmount: discount,
         promoCode: promoCode,
-        items: items.map(item => ({
-          productId: item.id,
+        items: cartItems.map(item => ({
+          productId: item.product.id,
           quantity: item.quantity,
-          price: item.price
+          price: item.product.price
         })),
         fullName: address.fullName,
         email: address.email,
@@ -83,6 +124,17 @@ const Checkout = () => {
           'Authorization': `Bearer ${token}`
         }
       });
+      
+      // Clear cart from backend
+      await axios.delete(API_ENDPOINTS.CART.CLEAR, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      // Clear promo code data
+      localStorage.removeItem('appliedPromoCode');
+      localStorage.removeItem('promoDiscount');
       
       // Update local state
       dispatch(placeOrder(orderData));
@@ -103,7 +155,15 @@ const Checkout = () => {
     }
   };
 
-  if (items.length === 0 && !orderPlaced) {
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (cartItems.length === 0 && !orderPlaced) {
     return (
       <Container maxWidth="lg" sx={{ py: 4, textAlign: 'center' }}>
         <Typography variant="h5" gutterBottom>Your cart is empty</Typography>
@@ -230,13 +290,13 @@ const Checkout = () => {
         <Typography variant="subtitle1" gutterBottom>
           Order Items:
         </Typography>
-        {items.map((item) => (
+        {cartItems.map((item) => (
           <Box key={item.id} sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
             <Typography variant="body2">
-              {item.title} x {item.quantity}
+              {item.product.title} x {item.quantity}
             </Typography>
             <Typography variant="body2">
-              ${(item.price * item.quantity).toFixed(2)}
+              ${(item.product.price * item.quantity).toFixed(2)}
             </Typography>
           </Box>
         ))}
@@ -245,7 +305,7 @@ const Checkout = () => {
 
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
           <Typography>Subtotal:</Typography>
-          <Typography>${(total + discount).toFixed(2)}</Typography>
+          <Typography>${subtotal.toFixed(2)}</Typography>
         </Box>
         {discount > 0 && (
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
