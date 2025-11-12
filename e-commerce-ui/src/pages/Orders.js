@@ -3,7 +3,7 @@ import {
   Container, Typography, Box, Card, CardContent, Chip,
   Divider, Grid, Button, CircularProgress, IconButton, Tooltip
 } from '@mui/material';
-import { ShoppingBag, LocalShipping, CheckCircle, Refresh, AccessTime } from '@mui/icons-material';
+import { ShoppingBag, LocalShipping, CheckCircle, Refresh, AccessTime, Cancel } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { API_ENDPOINTS, ERROR_MESSAGES } from '../config/api';
 import OrderStatusTracker from '../components/OrderStatusTracker';
@@ -62,7 +62,7 @@ const Orders = () => {
     switch (status?.toUpperCase()) {
       case 'PENDING': return <AccessTime />;
       case 'DELIVERED': return <CheckCircle />;
-      case 'CANCELLED': return <ShoppingBag />;
+      case 'CANCELLED': return <Cancel />;
       default: return <LocalShipping />;
     }
   };
@@ -175,6 +175,11 @@ const Orders = () => {
                         Auto-delivery in 6 hours
                       </Typography>
                     )}
+                    {order.status?.toUpperCase() === 'CANCELLED' && (
+                      <Typography variant="caption" color="error">
+                        Order cancelled
+                      </Typography>
+                    )}
                   </Box>
                 </Box>
 
@@ -235,9 +240,11 @@ const Orders = () => {
                 <OrderStatusTracker order={order} />
 
                 <Box sx={{ mt: 2, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                  <Button variant="outlined" size="small">
-                    Track Order
-                  </Button>
+                  {(order.status?.toUpperCase() !== 'CANCELLED') && (
+                    <Button variant="outlined" size="small">
+                      Track Order
+                    </Button>
+                  )}
                   {(order.status?.toUpperCase() === 'DELIVERED') && (
                     <Button variant="outlined" size="small" color="success">
                       Reorder
@@ -251,6 +258,11 @@ const Orders = () => {
                       onClick={() => handleCancelOrder(order.id)}
                     >
                       Cancel Order
+                    </Button>
+                  )}
+                  {(order.status?.toUpperCase() === 'CANCELLED') && (
+                    <Button variant="outlined" size="small" color="success">
+                      Reorder
                     </Button>
                   )}
                   <Button variant="outlined" size="small" onClick={fetchBackendOrders}>

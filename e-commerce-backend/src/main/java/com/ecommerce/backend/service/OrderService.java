@@ -148,7 +148,8 @@ public class OrderService {
             throw new RuntimeException("Only pending orders can be cancelled");
         }
         
-        orderRepository.delete(order);
+        order.setStatus(Order.OrderStatus.CANCELLED);
+        orderRepository.save(order);
     }
 
     @Transactional

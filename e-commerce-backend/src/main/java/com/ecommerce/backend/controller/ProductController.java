@@ -54,7 +54,7 @@ public class ProductController {
             response.put("totalItems", products.getTotalElements());
             response.put("totalPages", products.getTotalPages());
             
-            logger.info("Retrieved {} products for page {}", products.getContent().size(), page);
+            logger.info("Retrieved {} products for page {} of {}", products.getContent().size(), page + 1, products.getTotalPages());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             logger.error("Error retrieving products: {}", e.getMessage());
@@ -75,24 +75,19 @@ public class ProductController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         try {
-            if (page == 0 && size == 20) {
-                // Default behavior - return all products for backward compatibility
-                List<Product> products = productService.getProductsByCategory(category);
-                return ResponseEntity.ok(products);
-            } else {
-                // Paginated response
-                Pageable pageable = PageRequest.of(page, size);
-                Page<Product> products = productService.getProductsByCategory(category, pageable);
-                
-                Map<String, Object> response = new HashMap<>();
-                response.put("products", products.getContent());
-                response.put("currentPage", products.getNumber());
-                response.put("totalItems", products.getTotalElements());
-                response.put("totalPages", products.getTotalPages());
-                
-                logger.info("Retrieved {} products for category {} page {}", products.getContent().size(), category, page);
-                return ResponseEntity.ok(response);
-            }
+            // Always use paginated response
+            Pageable pageable = PageRequest.of(page, size);
+            Page<Product> products = productService.getProductsByCategory(category, pageable);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("products", products.getContent());
+            response.put("currentPage", products.getNumber());
+            response.put("totalItems", products.getTotalElements());
+            response.put("totalPages", products.getTotalPages());
+            
+            logger.info("Retrieved {} products for category {} page {} of {}", 
+                products.getContent().size(), category, page + 1, products.getTotalPages());
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             logger.error("Error retrieving products for category {}: {}", category, e.getMessage());
             return ResponseEntity.badRequest().body(Map.of("error", "Failed to retrieve products"));
