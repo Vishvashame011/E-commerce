@@ -1,15 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Stepper, Step, StepLabel, Typography, Chip } from '@mui/material';
-import { AccessTime, LocalShipping, CheckCircle } from '@mui/icons-material';
+import { AccessTime, LocalShipping, CheckCircle, Cancel } from '@mui/icons-material';
 
 const OrderStatusTracker = ({ order }) => {
   const [activeStep, setActiveStep] = useState(0);
 
-  const steps = [
-    { label: 'Order Placed', icon: <AccessTime /> },
-    { label: 'Processing', icon: <LocalShipping /> },
-    { label: 'Delivered', icon: <CheckCircle /> }
-  ];
+  const getSteps = () => {
+    if (order.status?.toUpperCase() === 'CANCELLED') {
+      return [
+        { label: 'Order Placed', icon: <AccessTime /> },
+        { label: 'Cancelled', icon: <Cancel />, error: true }
+      ];
+    }
+    return [
+      { label: 'Order Placed', icon: <AccessTime /> },
+      { label: 'Processing', icon: <LocalShipping /> },
+      { label: 'Delivered', icon: <CheckCircle /> }
+    ];
+  };
+
+  const steps = getSteps();
 
   useEffect(() => {
     switch (order.status?.toUpperCase()) {
@@ -20,7 +30,10 @@ const OrderStatusTracker = ({ order }) => {
         setActiveStep(1);
         break;
       case 'DELIVERED':
-        setActiveStep(2);
+        setActiveStep(order.status?.toUpperCase() === 'CANCELLED' ? 1 : 2);
+        break;
+      case 'CANCELLED':
+        setActiveStep(1);
         break;
       default:
         setActiveStep(0);
@@ -47,8 +60,11 @@ const OrderStatusTracker = ({ order }) => {
     <Box sx={{ width: '100%', mt: 2 }}>
       <Stepper activeStep={activeStep} alternativeLabel>
         {steps.map((step, index) => (
-          <Step key={step.label}>
-            <StepLabel icon={step.icon}>
+          <Step key={step.label} completed={index < activeStep || (step.error && index === activeStep)}>
+            <StepLabel 
+              icon={step.icon}
+              error={step.error && index === activeStep}
+            >
               {step.label}
             </StepLabel>
           </Step>
@@ -60,6 +76,17 @@ const OrderStatusTracker = ({ order }) => {
           <Chip 
             label={getTimeRemaining()} 
             color="warning" 
+            variant="outlined" 
+            size="small"
+          />
+        </Box>
+      )}
+      
+      {order.status?.toUpperCase() === 'CANCELLED' && (
+        <Box sx={{ textAlign: 'center', mt: 2 }}>
+          <Chip 
+            label="Order was cancelled" 
+            color="error" 
             variant="outlined" 
             size="small"
           />
