@@ -122,4 +122,4 @@ application-secrets.properties
 target/
 
 # Compiled application properties
-**/target/classes/application.properties
+**/target/classes/application.properties.env.local
