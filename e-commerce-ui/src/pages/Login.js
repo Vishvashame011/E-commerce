@@ -7,10 +7,13 @@ import {
   Typography, 
   Box, 
   Alert,
-  Link
+  Link,
+  Divider
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { API_ENDPOINTS, ERROR_MESSAGES } from '../config/api';
+import GoogleAuth from '../components/GoogleAuth';
+import OtpVerification from '../components/OtpVerification';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -19,6 +22,9 @@ const Login = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [otpStep, setOtpStep] = useState(false);
+  const [otpData, setOtpData] = useState(null);
+  const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -26,6 +32,42 @@ const Login = () => {
       ...formData,
       [e.target.name]: e.target.value
     });
+  };
+
+  const handleOtpSuccess = (data) => {
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('user', JSON.stringify({
+      id: data.id,
+      username: data.username,
+      email: data.email
+    }));
+    window.location.reload();
+  };
+
+  const handleGoogleSuccess = (data) => {
+    if (data.otpRequired) {
+      setOtpData({ identifier: data.email || data.mobileNumber, type: data.type });
+      setOtpStep(true);
+      setError('');
+      
+      // Show success message based on type
+      if (data.type === 'EMAIL_VERIFICATION') {
+        setSuccessMessage(`OTP has been sent to your email: ${data.email}`);
+      } else {
+        setSuccessMessage(`OTP has been sent to your mobile number: ${data.mobileNumber}`);
+      }
+    } else {
+      handleOtpSuccess(data);
+    }
+  };
+
+  const handleOtpResend = () => {
+    setError('');
+    if (otpData.type === 'EMAIL_VERIFICATION') {
+      setSuccessMessage(`OTP resent to your email: ${otpData.identifier}`);
+    } else {
+      setSuccessMessage(`OTP resent to your mobile number: ${otpData.identifier}`);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -45,13 +87,20 @@ const Login = () => {
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify({
-          id: data.id,
-          username: data.username,
-          email: data.email
-        }));
-        window.location.reload();
+        if (data.userId && data.mobileNumber) {
+          setOtpData({ identifier: data.mobileNumber, type: 'LOGIN' });
+          setOtpStep(true);
+          setError('');
+          setSuccessMessage(`OTP has been sent to your mobile number: ${data.mobileNumber}. Check console for OTP.`);
+        } else {
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('user', JSON.stringify({
+            id: data.id,
+            username: data.username,
+            email: data.email
+          }));
+          window.location.reload();
+        }
       } else {
         setError(data.error || ERROR_MESSAGES.UNAUTHORIZED);
       }
@@ -70,11 +119,13 @@ const Login = () => {
         </Typography>
         
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        {successMessage && <Alert severity="success" sx={{ mb: 2 }}>{successMessage}</Alert>}
         
+        {!otpStep ? (
         <Box component="form" onSubmit={handleSubmit}>
           <TextField
             fullWidth
-            label="Username"
+            label="Username/Email"
             name="username"
             value={formData.username}
             onChange={handleChange}
@@ -110,7 +161,21 @@ const Login = () => {
               Don't have an account? Sign up
             </Link>
           </Box>
+          <Divider sx={{ my: 2 }}>OR</Divider>
+          <GoogleAuth 
+            onSuccess={handleGoogleSuccess}
+            onError={setError}
+          />
         </Box>
+        ) : (
+        <OtpVerification
+          identifier={otpData.identifier}
+          type={otpData.type}
+          onSuccess={handleOtpSuccess}
+          onError={setError}
+          onResend={handleOtpResend}
+        />
+        )}
       </Paper>
     </Container>
   );

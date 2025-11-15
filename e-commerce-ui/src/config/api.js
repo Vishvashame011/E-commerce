@@ -14,7 +14,10 @@ export const API_ENDPOINTS = {
   ORDER_BY_ID: (id) => `${API_BASE_URL}/orders/${id}`,
   AUTH: {
     LOGIN: `${API_BASE_URL}/auth/login`,
-    SIGNUP: `${API_BASE_URL}/auth/signup`
+    SIGNUP: `${API_BASE_URL}/auth/signup`,
+    VERIFY_OTP: `${API_BASE_URL}/auth/verify-otp`,
+    RESEND_OTP: `${API_BASE_URL}/auth/resend-otp`,
+    GOOGLE_AUTH: `${API_BASE_URL}/auth/google`
   },
   USERS: {
     PROFILE: `${API_BASE_URL}/users/profile`,

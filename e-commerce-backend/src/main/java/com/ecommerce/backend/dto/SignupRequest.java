@@ -19,6 +19,9 @@ public class SignupRequest {
 
     private String firstName;
     private String lastName;
+    
+    @NotBlank(message = "Mobile number is required")
+    private String mobileNumber;
 
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
@@ -34,4 +37,7 @@ public class SignupRequest {
 
     public String getLastName() { return lastName; }
     public void setLastName(String lastName) { this.lastName = lastName; }
+
+    public String getMobileNumber() { return mobileNumber; }
+    public void setMobileNumber(String mobileNumber) { this.mobileNumber = mobileNumber; }
 }

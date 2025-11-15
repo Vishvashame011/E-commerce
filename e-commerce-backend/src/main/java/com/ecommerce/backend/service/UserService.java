@@ -30,6 +30,7 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
         user.setFirstName(signupRequest.getFirstName());
         user.setLastName(signupRequest.getLastName());
+        user.setPhoneNumber(signupRequest.getMobileNumber());
         
         return userRepository.save(user);
     }
@@ -138,5 +139,25 @@ public class UserService {
 
     public Optional<User> findById(Long id) {
         return userRepository.findById(id);
+    }
+
+    public Optional<User> findByUsernameOrEmail(String usernameOrEmail) {
+        Optional<User> user = userRepository.findByUsername(usernameOrEmail);
+        if (user.isEmpty()) {
+            user = userRepository.findByEmail(usernameOrEmail);
+        }
+        return user;
+    }
+
+    public Optional<User> findByPhoneNumber(String phoneNumber) {
+        return userRepository.findByPhoneNumber(phoneNumber);
+    }
+
+    public User updateUser(User user) {
+        return userRepository.save(user);
+    }
+
+    public User saveUser(User user) {
+        return userRepository.save(user);
     }
 }

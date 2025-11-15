@@ -24,8 +24,6 @@ public class User {
     @Column(unique = true, nullable = false)
     private String email;
 
-    @NotBlank(message = "Password is required")
-    @Size(min = 6, message = "Password must be at least 6 characters")
     @Column(nullable = false)
     private String password;
 
@@ -37,6 +35,15 @@ public class User {
 
     @Column(name = "phone_number")
     private String phoneNumber;
+
+    @Column(name = "mobile_verified", columnDefinition = "boolean default false")
+    private Boolean mobileVerified = false;
+
+    @Column(name = "email_verified", columnDefinition = "boolean default false")
+    private Boolean emailVerified = false;
+
+    @Column(name = "google_id")
+    private String googleId;
 
     @Column(name = "profile_image")
     private String profileImage;
@@ -72,6 +79,8 @@ public class User {
     public User() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
+        this.mobileVerified = false;
+        this.emailVerified = false;
     }
 
     public User(String username, String email, String password) {
@@ -107,6 +116,15 @@ public class User {
 
     public String getPhoneNumber() { return phoneNumber; }
     public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
+
+    public Boolean isMobileVerified() { return mobileVerified != null ? mobileVerified : false; }
+    public void setMobileVerified(Boolean mobileVerified) { this.mobileVerified = mobileVerified; }
+
+    public Boolean isEmailVerified() { return emailVerified != null ? emailVerified : false; }
+    public void setEmailVerified(Boolean emailVerified) { this.emailVerified = emailVerified; }
+
+    public String getGoogleId() { return googleId; }
+    public void setGoogleId(String googleId) { this.googleId = googleId; }
 
     public String getProfileImage() { return profileImage; }
     public void setProfileImage(String profileImage) { this.profileImage = profileImage; }
