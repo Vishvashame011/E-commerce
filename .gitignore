@@ -57,6 +57,7 @@ e-commerce-ui/.env.local
 e-commerce-ui/.env.development.local
 e-commerce-ui/.env.test.local
 e-commerce-ui/.env.production.local
+e-commerce-ui/.env
 
 # IDE Files
 e-commerce-ui/.vscode/
@@ -115,3 +116,10 @@ db-config.properties
 # JWT secrets
 jwt.secret
 application-secrets.properties
+
+# Maven target directories (contains compiled classes with secrets)
+**/target/
+target/
+
+# Compiled application properties
+**/target/classes/application.properties
