@@ -108,6 +108,9 @@ config/secrets/
 .env
 .env.*
 !.env.example
+e-commerce-backend/.env
+e-commerce-backend/.env.*
+!e-commerce-backend/.env.example
 
 # Database credentials
 database.properties
