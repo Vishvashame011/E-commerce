@@ -9,6 +9,13 @@
   gap: 20px;
   padding: 0;
   margin: 0;
+  width: 100%;
+}
+
+/* Force exactly 4 products per row */
+.MuiGrid-container .MuiGrid-item {
+  max-width: 25% !important;
+  flex-basis: 25% !important;
 }
 
 .product-card {
@@ -121,8 +128,12 @@
 
 @media (max-width: 1200px) {
   .product-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 15px;
+  }
+  .MuiGrid-container .MuiGrid-item {
+    max-width: 25% !important;
+    flex-basis: 25% !important;
   }
 }
 
@@ -130,6 +141,10 @@
   .product-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 15px;
+  }
+  .MuiGrid-container .MuiGrid-item {
+    max-width: 50% !important;
+    flex-basis: 50% !important;
   }
 }
 

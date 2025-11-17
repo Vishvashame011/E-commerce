@@ -75,6 +75,12 @@ public class AuthController {
             return ResponseEntity.badRequest().body(error);
         }
 
+        // Skip OTP for admin users or users with verified mobile
+        if (user.getRole().name().equals("ADMIN") || user.isMobileVerified()) {
+            String jwt = jwtUtils.generateJwtToken(user.getUsername(), user.getRole().name());
+            return ResponseEntity.ok(new AuthResponse(jwt, user.getId(), user.getUsername(), user.getEmail(), user.getRole().name()));
+        }
+
         otpService.sendOtp(user.getPhoneNumber(), "LOGIN");
         
         Map<String, Object> response = new HashMap<>();
@@ -101,15 +107,15 @@ public class AuthController {
                 user.setMobileVerified(true);
                 userService.updateUser(user);
                 
-                String jwt = jwtUtils.generateJwtToken(user.getUsername());
-                return ResponseEntity.ok(new AuthResponse(jwt, user.getId(), user.getUsername(), user.getEmail()));
+                String jwt = jwtUtils.generateJwtToken(user.getUsername(), user.getRole().name());
+                return ResponseEntity.ok(new AuthResponse(jwt, user.getId(), user.getUsername(), user.getEmail(), user.getRole().name()));
             }
         } else if ("LOGIN".equals(otpRequest.getType())) {
             Optional<User> userOpt = userService.findByPhoneNumber(otpRequest.getIdentifier());
             if (userOpt.isPresent()) {
                 User user = userOpt.get();
-                String jwt = jwtUtils.generateJwtToken(user.getUsername());
-                return ResponseEntity.ok(new AuthResponse(jwt, user.getId(), user.getUsername(), user.getEmail()));
+                String jwt = jwtUtils.generateJwtToken(user.getUsername(), user.getRole().name());
+                return ResponseEntity.ok(new AuthResponse(jwt, user.getId(), user.getUsername(), user.getEmail(), user.getRole().name()));
             }
         } else if ("EMAIL_VERIFICATION".equals(otpRequest.getType())) {
             Optional<User> userOpt = userService.findByEmail(otpRequest.getIdentifier());
@@ -118,8 +124,8 @@ public class AuthController {
                 user.setEmailVerified(true);
                 userService.updateUser(user);
                 
-                String jwt = jwtUtils.generateJwtToken(user.getUsername());
-                return ResponseEntity.ok(new AuthResponse(jwt, user.getId(), user.getUsername(), user.getEmail()));
+                String jwt = jwtUtils.generateJwtToken(user.getUsername(), user.getRole().name());
+                return ResponseEntity.ok(new AuthResponse(jwt, user.getId(), user.getUsername(), user.getEmail(), user.getRole().name()));
             }
         }
 

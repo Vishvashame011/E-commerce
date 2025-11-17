@@ -2,9 +2,12 @@ package com.ecommerce.backend.service;
 
 import com.ecommerce.backend.dto.ProfileRequest;
 import com.ecommerce.backend.dto.SignupRequest;
+import com.ecommerce.backend.entity.Role;
 import com.ecommerce.backend.entity.User;
 import com.ecommerce.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -159,5 +162,27 @@ public class UserService {
 
     public User saveUser(User user) {
         return userRepository.save(user);
+    }
+
+    public long getTotalUsers() {
+        return userRepository.count();
+    }
+
+    public Page<User> getAllUsers(Pageable pageable) {
+        return userRepository.findAll(pageable);
+    }
+
+    public User updateUserRole(Long id, Role role) {
+        Optional<User> userOpt = userRepository.findById(id);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            user.setRole(role);
+            return userRepository.save(user);
+        }
+        throw new RuntimeException("User not found");
+    }
+
+    public void deleteUser(Long id) {
+        userRepository.deleteById(id);
     }
 }

@@ -9,6 +9,9 @@ import com.ecommerce.backend.repository.OrderRepository;
 import com.ecommerce.backend.repository.ProductRepository;
 import com.ecommerce.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -195,5 +198,33 @@ public class OrderService {
         
         order.setOrderItems(orderItems);
         return orderRepository.save(order);
+    }
+
+    public long getTotalOrders() {
+        return orderRepository.count();
+    }
+
+    public List<Order> getRecentOrders(int limit) {
+        return orderRepository.findAllByOrderByOrderDateDesc()
+                .stream()
+                .limit(limit)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    public Page<Order> getAllOrders(Pageable pageable) {
+        return orderRepository.findAll(pageable);
+    }
+
+    public Order updateOrderStatus(Long id, String status) {
+        Optional<Order> orderOpt = orderRepository.findById(id);
+        if (orderOpt.isPresent()) {
+            Order order = orderOpt.get();
+            order.setStatus(Order.OrderStatus.valueOf(status.toUpperCase()));
+            if (Order.OrderStatus.valueOf(status.toUpperCase()) == Order.OrderStatus.DELIVERED) {
+                order.setDeliveryDate(LocalDateTime.now());
+            }
+            return orderRepository.save(order);
+        }
+        throw new RuntimeException("Order not found");
     }
 }

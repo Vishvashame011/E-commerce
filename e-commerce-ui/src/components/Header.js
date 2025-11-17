@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AppBar, Toolbar, Typography, IconButton, Box, Badge, Menu, MenuItem, Button } from '@mui/material';
-import { ShoppingCart, Notifications, AccountCircle, Store, Add, Login } from '@mui/icons-material';
+import { ShoppingCart, Notifications, AccountCircle, Store, Add, Login, AdminPanelSettings } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { API_ENDPOINTS } from '../config/api';
 import axios from 'axios';
@@ -77,77 +77,363 @@ const Header = () => {
   window.refreshCartCount = fetchCartCount;
 
   return (
-    <AppBar position="sticky">
-      <Toolbar>
-        <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1, cursor: 'pointer' }} onClick={() => navigate('/')}>
-          <Store sx={{ mr: 1 }} />
-          <Typography variant="h6" component="div">
+    <AppBar 
+      position="sticky" 
+      elevation={0}
+      sx={{
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        backdropFilter: 'blur(20px)',
+        borderBottom: '1px solid rgba(255,255,255,0.1)',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(255,255,255,0.05)',
+          zIndex: -1
+        }
+      }}
+    >
+      <Toolbar sx={{ py: 1 }}>
+        <Box 
+          sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            flexGrow: 1, 
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              transform: 'scale(1.02)'
+            }
+          }} 
+          onClick={() => navigate('/')}
+        >
+          <Store sx={{ 
+            mr: 1, 
+            fontSize: 32,
+            color: '#fff',
+            filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
+          }} />
+          <Typography 
+            variant="h5" 
+            component="div"
+            sx={{
+              fontWeight: 'bold',
+              background: 'linear-gradient(45deg, #fff 30%, #f0f8ff 90%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              textShadow: '0 2px 4px rgba(0,0,0,0.1)',
+              letterSpacing: '0.5px'
+            }}
+          >
             E-Commerce Store
           </Typography>
         </Box>
         
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           {isAuthenticated ? (
             <>
+              {user?.role === 'ADMIN' && (
+                <Button
+                  startIcon={<AdminPanelSettings />}
+                  onClick={() => navigate('/admin/dashboard')}
+                  sx={{ 
+                    color: 'white',
+                    background: 'rgba(255,255,255,0.1)',
+                    backdropFilter: 'blur(10px)',
+                    borderRadius: 3,
+                    px: 2,
+                    py: 1,
+                    fontWeight: 'bold',
+                    textTransform: 'none',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      background: 'rgba(255,255,255,0.2)',
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 8px 25px rgba(0,0,0,0.15)'
+                    }
+                  }}
+                >
+                  Admin Panel
+                </Button>
+              )}
+              {user?.role === 'ADMIN' && (
+                <Button
+                  startIcon={<Add />}
+                  onClick={() => navigate('/add-product')}
+                  sx={{ 
+                    color: 'white',
+                    background: 'rgba(255,255,255,0.1)',
+                    backdropFilter: 'blur(10px)',
+                    borderRadius: 3,
+                    px: 2,
+                    py: 1,
+                    fontWeight: 'bold',
+                    textTransform: 'none',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      background: 'rgba(255,255,255,0.2)',
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 8px 25px rgba(0,0,0,0.15)'
+                    }
+                  }}
+                >
+                  Add Product
+                </Button>
+              )}
               <Button
-                color="inherit"
-                startIcon={<Add />}
-                onClick={() => navigate('/add-product')}
-                sx={{ mr: 1 }}
-              >
-                Add Product
-              </Button>
-              <Button
-                color="inherit"
                 onClick={() => navigate('/orders')}
-                sx={{ mr: 1 }}
+                sx={{ 
+                  color: 'white',
+                  fontWeight: 'bold',
+                  textTransform: 'none',
+                  borderRadius: 2,
+                  px: 2,
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    background: 'rgba(255,255,255,0.1)',
+                    transform: 'translateY(-1px)'
+                  }
+                }}
               >
                 My Orders
               </Button>
               <Button
-                color="inherit"
                 onClick={() => navigate('/wishlist')}
-                sx={{ mr: 1 }}
+                sx={{ 
+                  color: 'white',
+                  fontWeight: 'bold',
+                  textTransform: 'none',
+                  borderRadius: 2,
+                  px: 2,
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    background: 'rgba(255,255,255,0.1)',
+                    transform: 'translateY(-1px)'
+                  }
+                }}
               >
                 Wishlist
               </Button>
-              <IconButton color="inherit" aria-label="shopping cart" onClick={() => navigate('/cart')}>
-                <Badge badgeContent={cartItemCount} color="error">
+              <IconButton 
+                aria-label="shopping cart" 
+                onClick={() => navigate('/cart')}
+                sx={{
+                  color: 'white',
+                  background: 'rgba(255,255,255,0.1)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    background: 'rgba(255,255,255,0.2)',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 8px 25px rgba(0,0,0,0.15)'
+                  }
+                }}
+              >
+                <Badge 
+                  badgeContent={cartItemCount} 
+                  sx={{
+                    '& .MuiBadge-badge': {
+                      background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                      color: 'white',
+                      fontWeight: 'bold',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+                    }
+                  }}
+                >
                   <ShoppingCart />
                 </Badge>
               </IconButton>
-              <IconButton color="inherit" aria-label="notifications">
+              <IconButton 
+                aria-label="notifications"
+                sx={{
+                  color: 'white',
+                  background: 'rgba(255,255,255,0.1)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    background: 'rgba(255,255,255,0.2)',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 8px 25px rgba(0,0,0,0.15)'
+                  }
+                }}
+              >
                 <Notifications />
               </IconButton>
-              <IconButton color="inherit" aria-label="profile" onClick={handleProfileClick}>
+              <IconButton 
+                aria-label="profile" 
+                onClick={handleProfileClick}
+                sx={{
+                  color: 'white',
+                  background: 'rgba(255,255,255,0.1)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    background: 'rgba(255,255,255,0.2)',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 8px 25px rgba(0,0,0,0.15)'
+                  }
+                }}
+              >
                 <AccountCircle />
               </IconButton>
               <Menu
                 anchorEl={anchorEl}
                 open={Boolean(anchorEl)}
                 onClose={handleProfileClose}
+                PaperProps={{
+                  sx: {
+                    background: 'rgba(255,255,255,0.95)',
+                    backdropFilter: 'blur(20px)',
+                    borderRadius: 3,
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+                    mt: 1,
+                    minWidth: 200
+                  }
+                }}
               >
-                <MenuItem onClick={() => handleMenuItemClick('/profile')}>Profile</MenuItem>
-                <MenuItem onClick={() => handleMenuItemClick('/orders')}>My Orders</MenuItem>
-                <MenuItem onClick={() => handleMenuItemClick('/wishlist')}>Wishlist</MenuItem>
-                <MenuItem onClick={handleLogout}>Logout</MenuItem>
+                <MenuItem 
+                  onClick={() => handleMenuItemClick('/profile')}
+                  sx={{
+                    borderRadius: 2,
+                    mx: 1,
+                    my: 0.5,
+                    fontWeight: 'bold',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      color: 'white',
+                      transform: 'translateX(5px)'
+                    }
+                  }}
+                >
+                  Profile
+                </MenuItem>
+                <MenuItem 
+                  onClick={() => handleMenuItemClick('/orders')}
+                  sx={{
+                    borderRadius: 2,
+                    mx: 1,
+                    my: 0.5,
+                    fontWeight: 'bold',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      color: 'white',
+                      transform: 'translateX(5px)'
+                    }
+                  }}
+                >
+                  My Orders
+                </MenuItem>
+                <MenuItem 
+                  onClick={() => handleMenuItemClick('/wishlist')}
+                  sx={{
+                    borderRadius: 2,
+                    mx: 1,
+                    my: 0.5,
+                    fontWeight: 'bold',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      color: 'white',
+                      transform: 'translateX(5px)'
+                    }
+                  }}
+                >
+                  Wishlist
+                </MenuItem>
+                {user?.role === 'ADMIN' && (
+                  <MenuItem 
+                    onClick={() => handleMenuItemClick('/admin/dashboard')}
+                    sx={{
+                      borderRadius: 2,
+                      mx: 1,
+                      my: 0.5,
+                      fontWeight: 'bold',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                        color: 'white',
+                        transform: 'translateX(5px)'
+                      }
+                    }}
+                  >
+                    Admin Panel
+                  </MenuItem>
+                )}
+                <MenuItem 
+                  onClick={handleLogout}
+                  sx={{
+                    borderRadius: 2,
+                    mx: 1,
+                    my: 0.5,
+                    fontWeight: 'bold',
+                    color: '#ef4444',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                      color: 'white',
+                      transform: 'translateX(5px)'
+                    }
+                  }}
+                >
+                  Logout
+                </MenuItem>
               </Menu>
             </>
           ) : (
             <>
               <Button
-                color="inherit"
                 startIcon={<Login />}
                 onClick={() => navigate('/login')}
-                sx={{ mr: 1 }}
+                sx={{ 
+                  color: 'white',
+                  background: 'rgba(255,255,255,0.1)',
+                  backdropFilter: 'blur(10px)',
+                  borderRadius: 3,
+                  px: 3,
+                  py: 1,
+                  fontWeight: 'bold',
+                  textTransform: 'none',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    background: 'rgba(255,255,255,0.2)',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 8px 25px rgba(0,0,0,0.15)'
+                  }
+                }}
               >
                 Login
               </Button>
               <Button
-                color="inherit"
-                variant="outlined"
                 onClick={() => navigate('/signup')}
-                sx={{ mr: 1, borderColor: 'white', '&:hover': { borderColor: 'white' } }}
+                sx={{ 
+                  color: 'white',
+                  background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                  borderRadius: 3,
+                  px: 3,
+                  py: 1,
+                  fontWeight: 'bold',
+                  textTransform: 'none',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #e879f9 0%, #ef4444 100%)',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 8px 25px rgba(0,0,0,0.15)'
+                  }
+                }}
               >
                 Sign Up
               </Button>

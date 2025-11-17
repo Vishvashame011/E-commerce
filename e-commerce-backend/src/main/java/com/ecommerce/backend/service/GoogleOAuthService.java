@@ -16,6 +16,9 @@ public class GoogleOAuthService {
 
     public GoogleIdToken.Payload verifyGoogleToken(String token) {
         try {
+            System.out.println("Verifying Google token with client ID: " + googleClientId);
+            System.out.println("Token length: " + (token != null ? token.length() : "null"));
+            
             GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
                     new NetHttpTransport(), 
                     GsonFactory.getDefaultInstance())
@@ -27,16 +30,19 @@ public class GoogleOAuthService {
                 GoogleIdToken.Payload payload = idToken.getPayload();
                 
                 // Log for debugging
+                System.out.println("✅ Google token verification successful!");
                 System.out.println("Google user email: " + payload.getEmail());
                 System.out.println("Google user name: " + payload.get("name"));
                 System.out.println("Google user verified: " + payload.getEmailVerified());
                 
                 return payload;
             } else {
-                System.err.println("Invalid Google token - verification failed");
+                System.err.println("❌ Invalid Google token - verification failed");
+                System.err.println("Expected client ID: " + googleClientId);
             }
         } catch (Exception e) {
-            System.err.println("Error verifying Google token: " + e.getMessage());
+            System.err.println("❌ Error verifying Google token: " + e.getMessage());
+            System.err.println("Client ID being used: " + googleClientId);
             e.printStackTrace();
         }
         return null;

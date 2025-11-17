@@ -118,30 +118,63 @@ const Cart = () => {
 
   if (cartItems.length === 0) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4, textAlign: 'center' }}>
-        <ShoppingCart sx={{ fontSize: 80, color: 'grey.400', mb: 2 }} />
-        <Typography variant="h5" gutterBottom>Your cart is empty</Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-          Add some products to get started!
-        </Typography>
-        <Button variant="contained" onClick={() => navigate('/')}>
-          Continue Shopping
-        </Button>
-      </Container>
+      <Box sx={{ bgcolor: '#f8fafc', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Container maxWidth="sm" sx={{ textAlign: 'center' }}>
+          <Box sx={{ 
+            bgcolor: 'white',
+            borderRadius: 3,
+            p: 6,
+            boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+          }}>
+            <ShoppingCart sx={{ fontSize: 80, color: 'grey.400', mb: 2 }} />
+            <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#2d3748', mb: 2 }}>
+              Your cart is empty
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+              Add some products to get started!
+            </Typography>
+            <Button 
+              variant="contained" 
+              size="large"
+              onClick={() => navigate('/')}
+              sx={{
+                borderRadius: 2,
+                fontWeight: 'bold',
+                textTransform: 'none',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                px: 4
+              }}
+            >
+              Continue Shopping
+            </Button>
+          </Box>
+        </Container>
+      </Box>
     );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        Shopping Cart ({itemCount} items)
-      </Typography>
+    <Box sx={{ bgcolor: '#f8fafc', minHeight: '100vh', py: 4 }}>
+      <Container maxWidth="lg">
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
+          <ShoppingCart sx={{ mr: 2, color: 'primary.main', fontSize: 32 }} />
+          <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#1a202c' }}>
+            Shopping Cart ({itemCount} items)
+          </Typography>
+        </Box>
 
       <Grid container spacing={3}>
         <Grid item xs={12} md={8}>
           {cartItems.map((item) => (
-            <Card key={item.id} sx={{ mb: 2 }}>
-              <CardContent>
+            <Card key={item.id} sx={{ 
+              mb: 2,
+              borderRadius: 3,
+              boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+              background: 'linear-gradient(145deg, #ffffff 0%, #f8f9ff 100%)',
+              transition: 'transform 0.2s ease',
+              '&:hover': { transform: 'translateY(-2px)' }
+            }}>
+              <CardContent sx={{ p: 3 }}>
                 <Box sx={{ display: 'flex', gap: 2 }}>
                   <CardMedia
                     component="img"
@@ -197,9 +230,15 @@ const Cart = () => {
         </Grid>
 
         <Grid item xs={12} md={4}>
-          <Card sx={{ position: 'sticky', top: 20 }}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
+          <Card sx={{ 
+            position: 'sticky', 
+            top: 20,
+            borderRadius: 3,
+            boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+            background: 'linear-gradient(145deg, #ffffff 0%, #f8f9ff 100%)'
+          }}>
+            <CardContent sx={{ p: 3 }}>
+              <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#2d3748', mb: 3 }}>
                 Order Summary
               </Typography>
               
@@ -257,7 +296,16 @@ const Cart = () => {
                 variant="contained"
                 size="large"
                 onClick={() => navigate('/checkout')}
-                sx={{ mb: 1 }}
+                sx={{ 
+                  mb: 2,
+                  borderRadius: 2,
+                  fontWeight: 'bold',
+                  textTransform: 'none',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)'
+                  }
+                }}
               >
                 Proceed to Checkout
               </Button>
@@ -266,6 +314,11 @@ const Cart = () => {
                 fullWidth
                 variant="outlined"
                 onClick={() => navigate('/')}
+                sx={{
+                  borderRadius: 2,
+                  fontWeight: 'medium',
+                  textTransform: 'none'
+                }}
               >
                 Continue Shopping
               </Button>
@@ -273,7 +326,8 @@ const Cart = () => {
           </Card>
         </Grid>
       </Grid>
-    </Container>
+      </Container>
+    </Box>
   );
 };
 

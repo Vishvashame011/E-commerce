@@ -58,26 +58,48 @@ const Wishlist = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Typography variant="h4" component="h1" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Favorite color="secondary" />
-        My Wishlist ({wishlistItems.length})
-      </Typography>
+    <Box sx={{ bgcolor: '#f8fafc', minHeight: '100vh', py: 4 }}>
+      <Container maxWidth="lg">
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
+          <Favorite sx={{ mr: 2, color: 'secondary.main', fontSize: 32 }} />
+          <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#1a202c' }}>
+            My Wishlist ({wishlistItems.length})
+          </Typography>
+        </Box>
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
       {wishlistItems.length === 0 ? (
-        <Box textAlign="center" sx={{ py: 8 }}>
-          <ShoppingBag sx={{ fontSize: 80, color: 'grey.400', mb: 2 }} />
-          <Typography variant="h5" gutterBottom>
-            Your wishlist is empty
-          </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-            Save items you love to your wishlist and shop them later
-          </Typography>
-          <Button variant="contained" onClick={() => navigate('/')}>
-            Start Shopping
-          </Button>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+          <Box sx={{ 
+            bgcolor: 'white',
+            borderRadius: 3,
+            p: 6,
+            textAlign: 'center',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+          }}>
+            <Favorite sx={{ fontSize: 80, color: 'secondary.main', mb: 2 }} />
+            <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#2d3748', mb: 2 }}>
+              Your wishlist is empty
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+              Save items you love to your wishlist and shop them later
+            </Typography>
+            <Button 
+              variant="contained" 
+              size="large"
+              onClick={() => navigate('/')}
+              sx={{
+                borderRadius: 2,
+                fontWeight: 'bold',
+                textTransform: 'none',
+                background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                px: 4
+              }}
+            >
+              Start Shopping
+            </Button>
+          </Box>
         </Box>
       ) : (
         <Grid container spacing={3}>
@@ -88,7 +110,8 @@ const Wishlist = () => {
           ))}
         </Grid>
       )}
-    </Container>
+      </Container>
+    </Box>
   );
 };
 

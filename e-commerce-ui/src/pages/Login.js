@@ -39,9 +39,19 @@ const Login = () => {
     localStorage.setItem('user', JSON.stringify({
       id: data.id,
       username: data.username,
-      email: data.email
+      email: data.email,
+      role: data.role
     }));
-    window.location.reload();
+    
+    // Trigger auth change event
+    window.dispatchEvent(new Event('authChange'));
+    
+    // Redirect based on role
+    if (data.role === 'ADMIN') {
+      window.location.href = '/admin/dashboard';
+    } else {
+      window.location.href = '/';
+    }
   };
 
   const handleGoogleSuccess = (data) => {
@@ -97,9 +107,19 @@ const Login = () => {
           localStorage.setItem('user', JSON.stringify({
             id: data.id,
             username: data.username,
-            email: data.email
+            email: data.email,
+            role: data.role
           }));
-          window.location.reload();
+          
+          // Trigger auth change event
+          window.dispatchEvent(new Event('authChange'));
+          
+          // Redirect based on role
+          if (data.role === 'ADMIN') {
+            window.location.href = '/admin/dashboard';
+          } else {
+            window.location.href = '/';
+          }
         }
       } else {
         setError(data.error || ERROR_MESSAGES.UNAUTHORIZED);
@@ -112,72 +132,103 @@ const Login = () => {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 8 }}>
-      <Paper elevation={3} sx={{ p: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom align="center">
-          Login
-        </Typography>
-        
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-        {successMessage && <Alert severity="success" sx={{ mb: 2 }}>{successMessage}</Alert>}
-        
-        {!otpStep ? (
-        <Box component="form" onSubmit={handleSubmit}>
-          <TextField
-            fullWidth
-            label="Username/Email"
-            name="username"
-            value={formData.username}
-            onChange={handleChange}
-            margin="normal"
-            required
-          />
-          <TextField
-            fullWidth
-            label="Password"
-            name="password"
-            type="password"
-            value={formData.password}
-            onChange={handleChange}
-            margin="normal"
-            required
-          />
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            sx={{ mt: 3, mb: 2 }}
-            disabled={loading}
-          >
-            {loading ? 'Logging in...' : 'Login'}
-          </Button>
-          <Box textAlign="center">
-            <Link 
-              component="button" 
-              variant="body2" 
-              onClick={() => navigate('/signup')}
-              type="button"
-            >
-              Don't have an account? Sign up
-            </Link>
+    <Box sx={{ 
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      py: 4
+    }}>
+      <Container maxWidth="sm">
+        <Paper elevation={24} sx={{ 
+          p: 4,
+          borderRadius: 3,
+          background: 'rgba(255,255,255,0.95)',
+          backdropFilter: 'blur(20px)',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.1)'
+        }}>
+          <Box sx={{ textAlign: 'center', mb: 4 }}>
+            <Typography variant="h3" sx={{ fontWeight: 'bold', color: '#2d3748', mb: 1 }}>
+              Welcome Back
+            </Typography>
+            <Typography variant="body1" sx={{ color: '#718096' }}>
+              Sign in to your account
+            </Typography>
           </Box>
-          <Divider sx={{ my: 2 }}>OR</Divider>
-          <GoogleAuth 
-            onSuccess={handleGoogleSuccess}
-            onError={setError}
-          />
-        </Box>
-        ) : (
-        <OtpVerification
-          identifier={otpData.identifier}
-          type={otpData.type}
-          onSuccess={handleOtpSuccess}
-          onError={setError}
-          onResend={handleOtpResend}
-        />
-        )}
-      </Paper>
-    </Container>
+          
+          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+          {successMessage && <Alert severity="success" sx={{ mb: 2 }}>{successMessage}</Alert>}
+          
+          {!otpStep ? (
+            <Box component="form" onSubmit={handleSubmit}>
+              <TextField
+                fullWidth
+                label="Username/Email"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                margin="normal"
+                required
+              />
+              <TextField
+                fullWidth
+                label="Password"
+                name="password"
+                type="password"
+                value={formData.password}
+                onChange={handleChange}
+                margin="normal"
+                required
+              />
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                size="large"
+                sx={{ 
+                  mt: 3, 
+                  mb: 2,
+                  borderRadius: 2,
+                  fontWeight: 'bold',
+                  textTransform: 'none',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)'
+                  }
+                }}
+                disabled={loading}
+              >
+                {loading ? 'Logging in...' : 'Sign In'}
+              </Button>
+              <Box textAlign="center">
+                <Link 
+                  component="button" 
+                  variant="body2" 
+                  onClick={() => navigate('/signup')}
+                  type="button"
+                >
+                  Don't have an account? Sign up
+                </Link>
+              </Box>
+              <Divider sx={{ my: 2 }}>OR</Divider>
+              <GoogleAuth 
+                onSuccess={handleGoogleSuccess}
+                onError={setError}
+              />
+            </Box>
+          ) : (
+            <OtpVerification
+              identifier={otpData.identifier}
+              type={otpData.type}
+              onSuccess={handleOtpSuccess}
+              onError={setError}
+              onResend={handleOtpResend}
+            />
+          )}
+        </Paper>
+      </Container>
+    </Box>
   );
 };
 

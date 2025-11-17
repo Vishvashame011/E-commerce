@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { TextField, FormControl, InputLabel, Select, MenuItem, Container, Typography, CircularProgress, Box, Pagination, Paper, Divider, Slider, Checkbox, FormControlLabel, FormGroup } from '@mui/material';
+import { TextField, FormControl, InputLabel, Select, MenuItem, Container, Typography, CircularProgress, Box, Pagination, Paper, Divider, Slider, Checkbox, FormControlLabel, FormGroup, Card, CardContent, Grid, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { Search, FilterList, TrendingUp, LocalOffer } from '@mui/icons-material';
 import axios from 'axios';
 import { API_ENDPOINTS, PRODUCTS_PER_PAGE, ERROR_MESSAGES } from '../config/api';
 import ProductCard from '../components/ProductCard';
@@ -149,61 +150,206 @@ const LandingPage = () => {
   }
 
   return (
-    <Container maxWidth={false} disableGutters>
-      <div className="search-filter-container">
-        <div className="search-filter-row">
-          <TextField
-            label="Search products..."
-            variant="outlined"
-            value={searchTerm}
-            onChange={handleSearchChange}
-            sx={{ minWidth: 300, flex: 1 }}
-            placeholder="Search by name, description, or category..."
-          />
-          <FormControl sx={{ minWidth: 200 }}>
-            <InputLabel>Sort By</InputLabel>
-            <Select
-              value={sortBy}
-              label="Sort By"
-              onChange={handleSortChange}
-            >
-              <MenuItem value="">Default</MenuItem>
-              <MenuItem value="price-asc">Price: Low to High</MenuItem>
-              <MenuItem value="price-desc">Price: High to Low</MenuItem>
-              <MenuItem value="name-asc">Name: A to Z</MenuItem>
-              <MenuItem value="name-desc">Name: Z to A</MenuItem>
-              <MenuItem value="rating-desc">Highest Rated</MenuItem>
-            </Select>
-          </FormControl>
-        </div>
-      </div>
+    <Box sx={{ bgcolor: '#f8fafc', minHeight: '100vh' }}>
+      {/* Hero Section */}
+      <Box sx={{ 
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        color: 'white',
+        py: 8,
+        mb: 4
+      }}>
+        <Container maxWidth="lg">
+          <Box sx={{ textAlign: 'center', mb: 4 }}>
+            <Typography variant="h2" sx={{ fontWeight: 'bold', mb: 2 }}>
+              Discover Amazing Products
+            </Typography>
+            <Typography variant="h6" sx={{ opacity: 0.9, mb: 4 }}>
+              Shop from thousands of products with the best deals
+            </Typography>
+            
+            {/* Search Bar */}
+            <Box sx={{ 
+              display: 'flex', 
+              gap: 2, 
+              maxWidth: 800, 
+              mx: 'auto',
+              bgcolor: 'white',
+              borderRadius: 3,
+              p: 1,
+              boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+            }}>
+              <TextField
+                placeholder="Search products..."
+                variant="outlined"
+                value={searchTerm}
+                onChange={handleSearchChange}
+                sx={{ 
+                  flex: 1,
+                  '& .MuiOutlinedInput-root': {
+                    border: 'none',
+                    '& fieldset': { border: 'none' }
+                  }
+                }}
+                InputProps={{
+                  startAdornment: <Search sx={{ mr: 1, color: '#718096' }} />
+                }}
+              />
+              <FormControl sx={{ minWidth: 200 }}>
+                <Select
+                  value={sortBy}
+                  onChange={handleSortChange}
+                  displayEmpty
+                  sx={{
+                    border: 'none',
+                    '& .MuiOutlinedInput-notchedOutline': { border: 'none' }
+                  }}
+                >
+                  <MenuItem value="">Sort By</MenuItem>
+                  <MenuItem value="price-asc">Price: Low to High</MenuItem>
+                  <MenuItem value="price-desc">Price: High to Low</MenuItem>
+                  <MenuItem value="name-asc">Name: A to Z</MenuItem>
+                  <MenuItem value="name-desc">Name: Z to A</MenuItem>
+                  <MenuItem value="rating-desc">Highest Rated</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+          </Box>
+        </Container>
+      </Box>
+
+      <Container maxWidth="xl">
 
       <Box sx={{ display: 'flex', width: '100%', minHeight: '100vh' }}>
         {/* Left Sidebar - Filters */}
-        <Paper sx={{ 
+        <Card sx={{ 
           width: 280, 
-          p: 2, 
           height: 'fit-content', 
           position: 'sticky', 
-          top: 180,
+          top: 20,
           flexShrink: 0,
-          borderRadius: 2,
-          boxShadow: 2
+          borderRadius: 4,
+          boxShadow: '0 25px 50px rgba(102, 126, 234, 0.15)',
+          background: 'rgba(255,255,255,0.9)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(102, 126, 234, 0.1)',
+          overflow: 'hidden',
+          position: 'relative',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '3px',
+            background: 'linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%)'
+          },
+          '&::after': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.02) 0%, rgba(240, 147, 251, 0.02) 100%)',
+            zIndex: -1
+          }
         }}>
-          <Typography variant="h6" gutterBottom>Filters</Typography>
+        <CardContent sx={{ p: 3 }}>
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            mb: 3,
+            p: 2,
+            borderRadius: 3,
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            color: 'white',
+            boxShadow: '0 8px 25px rgba(102, 126, 234, 0.25)',
+            position: 'relative',
+            overflow: 'hidden',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'linear-gradient(45deg, rgba(255,255,255,0.1) 0%, transparent 100%)',
+              zIndex: 0
+            }
+          }}>
+            <FilterList sx={{ 
+              mr: 1.5, 
+              fontSize: 24,
+              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
+              zIndex: 1
+            }} />
+            <Typography variant="h6" sx={{ 
+              fontWeight: 'bold',
+              textShadow: '0 2px 4px rgba(0,0,0,0.2)',
+              zIndex: 1
+            }}>
+              🎯 Filters
+            </Typography>
+          </Box>
           
           {/* Category Filter */}
           <Box sx={{ mb: 3 }}>
-            <Typography variant="subtitle2" gutterBottom>Category</Typography>
+            <Typography 
+              variant="subtitle2" 
+              sx={{ 
+                fontWeight: 'bold',
+                color: '#2d3748',
+                mb: 1.5,
+                display: 'flex',
+                alignItems: 'center',
+                fontSize: '0.9rem'
+              }}
+            >
+              📂 Category
+            </Typography>
             <FormControl fullWidth size="small">
               <Select
                 value={selectedCategory}
                 onChange={handleCategoryChange}
                 displayEmpty
+                sx={{
+                  borderRadius: 3,
+                  background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(240, 147, 251, 0.05) 100%)',
+                  border: '1px solid rgba(102, 126, 234, 0.1)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(240, 147, 251, 0.1) 100%)',
+                    border: '1px solid rgba(102, 126, 234, 0.2)',
+                    transform: 'translateY(-1px)',
+                    boxShadow: '0 4px 12px rgba(102, 126, 234, 0.15)'
+                  },
+                  '&.Mui-focused': {
+                    background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(240, 147, 251, 0.1) 100%)',
+                    border: '1px solid #667eea',
+                    boxShadow: '0 0 0 3px rgba(102, 126, 234, 0.1)'
+                  },
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    border: 'none'
+                  }
+                }}
               >
-                <MenuItem value="">All Categories</MenuItem>
+                <MenuItem value="" sx={{ fontWeight: 'bold', color: '#667eea' }}>✨ All Categories</MenuItem>
                 {categories.map((category) => (
-                  <MenuItem key={category} value={category}>
+                  <MenuItem 
+                    key={category} 
+                    value={category}
+                    sx={{
+                      borderRadius: 2,
+                      mx: 1,
+                      my: 0.5,
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        color: 'white',
+                        transform: 'translateX(8px)'
+                      }
+                    }}
+                  >
                     {category.charAt(0).toUpperCase() + category.slice(1)}
                   </MenuItem>
                 ))}
@@ -211,52 +357,279 @@ const LandingPage = () => {
             </FormControl>
           </Box>
 
-          <Divider sx={{ my: 2 }} />
+          <Divider sx={{ 
+            my: 2.5,
+            background: 'linear-gradient(90deg, transparent 0%, rgba(102, 126, 234, 0.3) 20%, rgba(240, 147, 251, 0.3) 80%, transparent 100%)',
+            height: '2px',
+            border: 'none',
+            borderRadius: 1
+          }} />
 
           {/* Price Range Filter */}
           <Box sx={{ mb: 3 }}>
-            <Typography variant="subtitle2" gutterBottom>
-              Price Range: ${priceRange[0]} - ${priceRange[1]}
+            <Typography 
+              variant="subtitle2" 
+              sx={{ 
+                fontWeight: 'bold',
+                color: '#2d3748',
+                mb: 1.5,
+                display: 'flex',
+                alignItems: 'center',
+                fontSize: '0.9rem'
+              }}
+            >
+              💰 Price Range
             </Typography>
-            <Slider
-              value={priceRange}
-              onChange={handlePriceChange}
-              valueLabelDisplay="auto"
-              min={0}
-              max={maxPrice}
-              sx={{ mt: 2 }}
-            />
+            <Box sx={{
+              p: 2.5,
+              borderRadius: 3,
+              background: 'linear-gradient(135deg, rgba(240, 147, 251, 0.08) 0%, rgba(245, 87, 108, 0.08) 100%)',
+              border: '1px solid rgba(240, 147, 251, 0.15)',
+              position: 'relative',
+              overflow: 'hidden',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'linear-gradient(45deg, rgba(255,255,255,0.5) 0%, transparent 100%)',
+                zIndex: 0
+              }
+            }}>
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  fontWeight: 'bold',
+                  color: '#667eea',
+                  textAlign: 'center',
+                  mb: 2,
+                  fontSize: '0.95rem',
+                  zIndex: 1,
+                  position: 'relative'
+                }}
+              >
+                ${priceRange[0]} - ${priceRange[1]}
+              </Typography>
+              <Slider
+                value={priceRange}
+                onChange={handlePriceChange}
+                valueLabelDisplay="auto"
+                min={0}
+                max={maxPrice}
+                sx={{ 
+                  color: '#667eea',
+                  zIndex: 1,
+                  position: 'relative',
+                  '& .MuiSlider-thumb': {
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    boxShadow: '0 4px 12px rgba(102, 126, 234, 0.4)',
+                    border: '2px solid white',
+                    '&:hover': {
+                      boxShadow: '0 6px 20px rgba(102, 126, 234, 0.6)',
+                      transform: 'scale(1.1)'
+                    }
+                  },
+                  '& .MuiSlider-track': {
+                    background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
+                    height: 4,
+                    borderRadius: 2
+                  },
+                  '& .MuiSlider-rail': {
+                    background: 'rgba(102, 126, 234, 0.2)',
+                    height: 4,
+                    borderRadius: 2
+                  }
+                }}
+              />
+            </Box>
           </Box>
 
-          <Divider sx={{ my: 2 }} />
+          <Divider sx={{ 
+            my: 2.5,
+            background: 'linear-gradient(90deg, transparent 0%, rgba(240, 147, 251, 0.3) 20%, rgba(102, 126, 234, 0.3) 80%, transparent 100%)',
+            height: '2px',
+            border: 'none',
+            borderRadius: 1
+          }} />
 
           {/* Quick Sort Options */}
           <Box>
-            <Typography variant="subtitle2" gutterBottom>Quick Sort</Typography>
-            <FormGroup>
+            <Typography 
+              variant="subtitle2" 
+              sx={{ 
+                fontWeight: 'bold',
+                color: '#2d3748',
+                mb: 2,
+                display: 'flex',
+                alignItems: 'center',
+                fontSize: '0.9rem'
+              }}
+            >
+              ⚡ Quick Sort
+            </Typography>
+            <FormGroup sx={{ gap: 0.5 }}>
               <FormControlLabel
-                control={<Checkbox checked={sortBy === 'price-asc'} onChange={() => setSortBy(sortBy === 'price-asc' ? '' : 'price-asc')} />}
-                label="Price: Low to High"
+                control={
+                  <Checkbox 
+                    checked={sortBy === 'price-asc'} 
+                    onChange={() => setSortBy(sortBy === 'price-asc' ? '' : 'price-asc')}
+                    sx={{
+                      color: '#667eea',
+                      '&.Mui-checked': {
+                        color: '#667eea'
+                      },
+                      '& .MuiSvgIcon-root': {
+                        fontSize: 18
+                      }
+                    }}
+                  />
+                }
+                label="💸 Price: Low to High"
+                sx={{
+                  borderRadius: 2,
+                  p: 0.5,
+                  m: 0,
+                  transition: 'all 0.3s ease',
+                  fontSize: '0.85rem',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(240, 147, 251, 0.1) 100%)',
+                    transform: 'translateX(5px)'
+                  },
+                  '& .MuiFormControlLabel-label': {
+                    fontSize: '0.85rem'
+                  }
+                }}
               />
               <FormControlLabel
-                control={<Checkbox checked={sortBy === 'price-desc'} onChange={() => setSortBy(sortBy === 'price-desc' ? '' : 'price-desc')} />}
-                label="Price: High to Low"
+                control={
+                  <Checkbox 
+                    checked={sortBy === 'price-desc'} 
+                    onChange={() => setSortBy(sortBy === 'price-desc' ? '' : 'price-desc')}
+                    sx={{
+                      color: '#667eea',
+                      '&.Mui-checked': {
+                        color: '#667eea'
+                      },
+                      '& .MuiSvgIcon-root': {
+                        fontSize: 18
+                      }
+                    }}
+                  />
+                }
+                label="💰 Price: High to Low"
+                sx={{
+                  borderRadius: 2,
+                  p: 0.5,
+                  m: 0,
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(240, 147, 251, 0.1) 100%)',
+                    transform: 'translateX(5px)'
+                  },
+                  '& .MuiFormControlLabel-label': {
+                    fontSize: '0.85rem'
+                  }
+                }}
               />
               <FormControlLabel
-                control={<Checkbox checked={sortBy === 'name-asc'} onChange={() => setSortBy(sortBy === 'name-asc' ? '' : 'name-asc')} />}
-                label="Name: A to Z"
+                control={
+                  <Checkbox 
+                    checked={sortBy === 'name-asc'} 
+                    onChange={() => setSortBy(sortBy === 'name-asc' ? '' : 'name-asc')}
+                    sx={{
+                      color: '#667eea',
+                      '&.Mui-checked': {
+                        color: '#667eea'
+                      },
+                      '& .MuiSvgIcon-root': {
+                        fontSize: 18
+                      }
+                    }}
+                  />
+                }
+                label="🔤 Name: A to Z"
+                sx={{
+                  borderRadius: 2,
+                  p: 0.5,
+                  m: 0,
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(240, 147, 251, 0.1) 100%)',
+                    transform: 'translateX(5px)'
+                  },
+                  '& .MuiFormControlLabel-label': {
+                    fontSize: '0.85rem'
+                  }
+                }}
               />
               <FormControlLabel
-                control={<Checkbox checked={sortBy === 'name-desc'} onChange={() => setSortBy(sortBy === 'name-desc' ? '' : 'name-desc')} />}
-                label="Name: Z to A"
+                control={
+                  <Checkbox 
+                    checked={sortBy === 'name-desc'} 
+                    onChange={() => setSortBy(sortBy === 'name-desc' ? '' : 'name-desc')}
+                    sx={{
+                      color: '#667eea',
+                      '&.Mui-checked': {
+                        color: '#667eea'
+                      },
+                      '& .MuiSvgIcon-root': {
+                        fontSize: 18
+                      }
+                    }}
+                  />
+                }
+                label="🔠 Name: Z to A"
+                sx={{
+                  borderRadius: 2,
+                  p: 0.5,
+                  m: 0,
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(240, 147, 251, 0.1) 100%)',
+                    transform: 'translateX(5px)'
+                  },
+                  '& .MuiFormControlLabel-label': {
+                    fontSize: '0.85rem'
+                  }
+                }}
               />
               <FormControlLabel
-                control={<Checkbox checked={sortBy === 'rating-desc'} onChange={() => setSortBy(sortBy === 'rating-desc' ? '' : 'rating-desc')} />}
-                label="Highest Rated"
+                control={
+                  <Checkbox 
+                    checked={sortBy === 'rating-desc'} 
+                    onChange={() => setSortBy(sortBy === 'rating-desc' ? '' : 'rating-desc')}
+                    sx={{
+                      color: '#667eea',
+                      '&.Mui-checked': {
+                        color: '#667eea'
+                      },
+                      '& .MuiSvgIcon-root': {
+                        fontSize: 18
+                      }
+                    }}
+                  />
+                }
+                label="⭐ Highest Rated"
+                sx={{
+                  borderRadius: 2,
+                  p: 0.5,
+                  m: 0,
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(240, 147, 251, 0.1) 100%)',
+                    transform: 'translateX(5px)'
+                  },
+                  '& .MuiFormControlLabel-label': {
+                    fontSize: '0.85rem'
+                  }
+                }}
               />
             </FormGroup>
           </Box>
-        </Paper>
+        </CardContent>
+        </Card>
 
         {/* Main Content */}
         <Box sx={{ 
@@ -264,9 +637,12 @@ const LandingPage = () => {
           pl: 3,
           pr: 2
         }}>
-        <Typography variant="h4" component="h1" gutterBottom sx={{ textAlign: 'center', mb: 3 }}>
-          Our Products
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 4 }}>
+          <TrendingUp sx={{ mr: 2, color: 'primary.main', fontSize: 32 }} />
+          <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#1a202c' }}>
+            Featured Products
+          </Typography>
+        </Box>
         
         {/* Show search/filter info */}
         {(searchTerm || selectedCategory) && (
@@ -287,11 +663,13 @@ const LandingPage = () => {
           </Typography>
         ) : (
           <>
-            <div className="product-grid">
+            <Grid container spacing={3} sx={{ justifyContent: 'flex-start' }}>
               {paginatedProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
+                <Grid item xs={12} sm={6} md={3} lg={3} xl={3} key={product.id}>
+                  <ProductCard product={product} />
+                </Grid>
               ))}
-            </div>
+            </Grid>
             
             {/* Pagination */}
             {totalPages > 1 && (
@@ -338,7 +716,8 @@ const LandingPage = () => {
         )}
         </Box>
       </Box>
-    </Container>
+      </Container>
+    </Box>
   );
 };
 

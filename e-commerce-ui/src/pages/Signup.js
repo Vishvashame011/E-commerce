@@ -96,11 +96,30 @@ const Signup = () => {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 8 }}>
-      <Paper elevation={3} sx={{ p: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom align="center">
-          Sign Up
-        </Typography>
+    <Box sx={{ 
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      py: 4
+    }}>
+      <Container maxWidth="sm">
+        <Paper elevation={24} sx={{ 
+          p: 4,
+          borderRadius: 3,
+          background: 'rgba(255,255,255,0.95)',
+          backdropFilter: 'blur(20px)',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.1)'
+        }}>
+          <Box sx={{ textAlign: 'center', mb: 4 }}>
+            <Typography variant="h3" sx={{ fontWeight: 'bold', color: '#2d3748', mb: 1 }}>
+              Create Account
+            </Typography>
+            <Typography variant="body1" sx={{ color: '#718096' }}>
+              Join us today and start shopping
+            </Typography>
+          </Box>
         
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
         
@@ -164,10 +183,21 @@ const Signup = () => {
             type="submit"
             fullWidth
             variant="contained"
-            sx={{ mt: 3, mb: 2 }}
+            size="large"
+            sx={{ 
+              mt: 3, 
+              mb: 2,
+              borderRadius: 2,
+              fontWeight: 'bold',
+              textTransform: 'none',
+              background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #e879f9 0%, #ef4444 100%)'
+              }
+            }}
             disabled={loading}
           >
-            {loading ? 'Creating Account...' : 'Sign Up'}
+            {loading ? 'Creating Account...' : 'Create Account'}
           </Button>
           <Box textAlign="center">
             <Link 
@@ -194,8 +224,9 @@ const Signup = () => {
           onResend={handleOtpResend}
         />
         )}
-      </Paper>
-    </Container>
+        </Paper>
+      </Container>
+    </Box>
   );
 };
 

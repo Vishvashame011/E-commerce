@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 export const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8081/api';
 export const UPLOAD_BASE_URL = process.env.REACT_APP_UPLOAD_URL || 'http://localhost:8081';
 export const PRODUCTS_PER_PAGE = parseInt(process.env.REACT_APP_PRODUCTS_PER_PAGE) || 20;
@@ -40,6 +42,16 @@ export const API_ENDPOINTS = {
     GET: (productId) => `${API_BASE_URL}/products/${productId}/reviews`,
     ADD: (productId) => `${API_BASE_URL}/products/${productId}/rating`,
     STATS: (productId) => `${API_BASE_URL}/products/${productId}/rating`
+  },
+  ADMIN: {
+    DASHBOARD: `${API_BASE_URL}/admin/dashboard`,
+    USERS: `${API_BASE_URL}/admin/users`,
+    USER_ROLE: (id) => `${API_BASE_URL}/admin/users/${id}/role`,
+    DELETE_USER: (id) => `${API_BASE_URL}/admin/users/${id}`,
+    PRODUCTS: `${API_BASE_URL}/admin/products`,
+    PRODUCT: (id) => `${API_BASE_URL}/admin/products/${id}`,
+    ORDERS: `${API_BASE_URL}/admin/orders`,
+    ORDER_STATUS: (id) => `${API_BASE_URL}/admin/orders/${id}/status`
   }
 };
 
@@ -52,4 +64,37 @@ export const ERROR_MESSAGES = {
   VALIDATION_ERROR: 'Please check your input and try again.'
 };
 
-export default API_BASE_URL;
+// Create axios instance with interceptors
+
+const api = axios.create({
+  baseURL: API_BASE_URL,
+});
+
+// Request interceptor to add auth token
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Response interceptor to handle auth errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
+export default api;

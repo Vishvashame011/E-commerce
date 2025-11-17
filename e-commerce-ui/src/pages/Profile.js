@@ -9,9 +9,12 @@ import {
   Alert,
   Avatar,
   Grid,
-  Divider
+  Divider,
+  Card,
+  CardContent,
+  IconButton
 } from '@mui/material';
-import { PhotoCamera } from '@mui/icons-material';
+import { PhotoCamera, Person, Edit } from '@mui/icons-material';
 import { API_ENDPOINTS, UPLOAD_BASE_URL, ERROR_MESSAGES } from '../config/api';
 
 const Profile = () => {
@@ -126,48 +129,79 @@ const Profile = () => {
   };
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
-      <Paper elevation={3} sx={{ p: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom align="center">
-          My Profile
-        </Typography>
+    <Box sx={{ bgcolor: '#f8fafc', minHeight: '100vh', py: 4 }}>
+      <Container maxWidth="md">
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 4 }}>
+          <Person sx={{ mr: 2, color: 'primary.main', fontSize: 32 }} />
+          <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#1a202c' }}>
+            My Profile
+          </Typography>
+        </Box>
 
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
         {message && <Alert severity="success" sx={{ mb: 2 }}>{message}</Alert>}
 
-        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
-          <Box sx={{ position: 'relative' }}>
-            <Avatar
-              src={profile.profileImage ? `${UPLOAD_BASE_URL}${profile.profileImage}` : ''}
-              sx={{ width: { xs: 100, sm: 120 }, height: { xs: 100, sm: 120 } }}
-            />
-            <Button
-              component="label"
-              sx={{
-                position: 'absolute',
-                bottom: 0,
-                right: 0,
-                minWidth: 'auto',
-                borderRadius: '50%',
-                p: 1
-              }}
-              variant="contained"
-              size="small"
-            >
-              <PhotoCamera />
-              <input
-                type="file"
-                hidden
-                accept="image/*"
-                onChange={handleImageUpload}
+        <Card sx={{ 
+          borderRadius: 3,
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+          background: 'linear-gradient(145deg, #ffffff 0%, #f8f9ff 100%)',
+          mb: 3
+        }}>
+          <CardContent sx={{ p: 4, textAlign: 'center' }}>
+            <Box sx={{ position: 'relative', display: 'inline-block', mb: 2 }}>
+              <Avatar
+                src={profile.profileImage ? `${UPLOAD_BASE_URL}${profile.profileImage}` : ''}
+                sx={{ 
+                  width: 120, 
+                  height: 120,
+                  border: '4px solid white',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+                }}
               />
-            </Button>
-          </Box>
-        </Box>
+              <IconButton
+                component="label"
+                sx={{
+                  position: 'absolute',
+                  bottom: 0,
+                  right: 0,
+                  bgcolor: 'primary.main',
+                  color: 'white',
+                  '&:hover': { bgcolor: 'primary.dark' },
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                }}
+              >
+                <PhotoCamera />
+                <input
+                  type="file"
+                  hidden
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                />
+              </IconButton>
+            </Box>
+            <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#2d3748' }}>
+              {profile.firstName} {profile.lastName}
+            </Typography>
+            <Typography variant="body1" sx={{ color: '#718096' }}>
+              @{profile.username}
+            </Typography>
+          </CardContent>
+        </Card>
 
-        <Divider sx={{ mb: 3 }} />
-
-        <Box component="form" onSubmit={handleSubmit}>
+        <Card sx={{ 
+          borderRadius: 3,
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+          background: 'linear-gradient(145deg, #ffffff 0%, #f8f9ff 100%)'
+        }}>
+          <CardContent sx={{ p: 4 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+              <Edit sx={{ mr: 2, color: 'primary.main' }} />
+              <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#2d3748' }}>
+                Edit Profile Information
+              </Typography>
+            </Box>
+            
+            <Box component="form" onSubmit={handleSubmit}>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <TextField
@@ -272,18 +306,30 @@ const Profile = () => {
             </Grid>
           </Grid>
 
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            sx={{ mt: 3, mb: 2 }}
-            disabled={loading}
-          >
-            {loading ? 'Updating...' : 'Update Profile'}
-          </Button>
-        </Box>
-      </Paper>
-    </Container>
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                size="large"
+                sx={{ 
+                  mt: 3,
+                  borderRadius: 2,
+                  fontWeight: 'bold',
+                  textTransform: 'none',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)'
+                  }
+                }}
+                disabled={loading}
+              >
+                {loading ? 'Updating...' : 'Update Profile'}
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
+      </Container>
+    </Box>
   );
 };
 

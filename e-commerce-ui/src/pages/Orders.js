@@ -3,7 +3,7 @@ import {
   Container, Typography, Box, Card, CardContent, Chip,
   Divider, Grid, Button, CircularProgress, IconButton, Tooltip
 } from '@mui/material';
-import { ShoppingBag, LocalShipping, CheckCircle, Refresh, AccessTime, Cancel } from '@mui/icons-material';
+import { ShoppingBag, LocalShipping, CheckCircle, Refresh, AccessTime, Cancel, Receipt } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { API_ENDPOINTS, ERROR_MESSAGES } from '../config/api';
 import OrderStatusTracker from '../components/OrderStatusTracker';
@@ -108,45 +108,88 @@ const Orders = () => {
 
   if (allOrders.length === 0) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4, textAlign: 'center' }}>
-        <ShoppingBag sx={{ fontSize: 80, color: 'grey.400', mb: 2 }} />
-        <Typography variant="h5" gutterBottom>No orders found</Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
-          {loading ? 'Loading orders...' : 'No orders available'}
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          API Endpoint: {API_ENDPOINTS.ORDERS}
-        </Typography>
-        <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
-          <Button variant="contained" onClick={() => navigate('/')}>
-            Start Shopping
-          </Button>
-          <Button variant="outlined" onClick={fetchBackendOrders}>
-            Retry Loading
-          </Button>
-        </Box>
-      </Container>
+      <Box sx={{ bgcolor: '#f8fafc', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Container maxWidth="sm" sx={{ textAlign: 'center' }}>
+          <Box sx={{ 
+            bgcolor: 'white',
+            borderRadius: 3,
+            p: 6,
+            boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+          }}>
+            <ShoppingBag sx={{ fontSize: 80, color: 'grey.400', mb: 2 }} />
+            <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#2d3748', mb: 2 }}>
+              No orders found
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+              {loading ? 'Loading orders...' : 'You haven\'t placed any orders yet'}
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+              <Button 
+                variant="contained" 
+                size="large"
+                onClick={() => navigate('/')}
+                sx={{
+                  borderRadius: 2,
+                  fontWeight: 'bold',
+                  textTransform: 'none',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  px: 4
+                }}
+              >
+                Start Shopping
+              </Button>
+              <Button 
+                variant="outlined" 
+                size="large"
+                onClick={fetchBackendOrders}
+                sx={{
+                  borderRadius: 2,
+                  fontWeight: 'medium',
+                  textTransform: 'none'
+                }}
+              >
+                Retry Loading
+              </Button>
+            </Box>
+          </Box>
+        </Container>
+      </Box>
     );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4">
-          My Orders ({allOrders.length})
-        </Typography>
-        <Tooltip title="Refresh Orders">
-          <IconButton onClick={fetchBackendOrders} color="primary">
-            <Refresh />
-          </IconButton>
-        </Tooltip>
-      </Box>
+    <Box sx={{ bgcolor: '#f8fafc', minHeight: '100vh', py: 4 }}>
+      <Container maxWidth="lg">
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
+          <Receipt sx={{ mr: 2, color: 'primary.main', fontSize: 32 }} />
+          <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#1a202c', mr: 'auto' }}>
+            My Orders ({allOrders.length})
+          </Typography>
+          <Tooltip title="Refresh Orders">
+            <IconButton 
+              onClick={fetchBackendOrders} 
+              sx={{
+                bgcolor: 'primary.main',
+                color: 'white',
+                '&:hover': { bgcolor: 'primary.dark' }
+              }}
+            >
+              <Refresh />
+            </IconButton>
+          </Tooltip>
+        </Box>
 
       <Grid container spacing={3}>
         {allOrders.map((order) => (
           <Grid item xs={12} key={order.id}>
-            <Card>
-              <CardContent>
+            <Card sx={{
+              borderRadius: 3,
+              boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+              background: 'linear-gradient(145deg, #ffffff 0%, #f8f9ff 100%)',
+              transition: 'transform 0.2s ease',
+              '&:hover': { transform: 'translateY(-2px)' }
+            }}>
+              <CardContent sx={{ p: 3 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
                   <Box>
                     <Typography variant="h6" gutterBottom>
@@ -274,7 +317,8 @@ const Orders = () => {
           </Grid>
         ))}
       </Grid>
-    </Container>
+      </Container>
+    </Box>
   );
 };
 
